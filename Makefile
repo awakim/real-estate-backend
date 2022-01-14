@@ -32,4 +32,7 @@ server:
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/awakim/immoblock-backend/db/sqlc Store
 
-.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc server mock 
+migratecreate:
+	migrate create -ext sql -dir db/migration -seq $(migration)
+
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc server mock migratecreate

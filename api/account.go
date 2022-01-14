@@ -5,13 +5,14 @@ import (
 	"net/http"
 
 	db "github.com/awakim/immoblock-backend/db/sqlc"
+	"github.com/lib/pq"
 
 	"github.com/gin-gonic/gin"
 )
 
 type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required"`
+	Owner      string `json:"owner" binding:"required"`
+	PropertyID int64  `json:"property_id" binding:"required"`
 }
 
 func (server *Server) createAccount(ctx *gin.Context) {
@@ -22,13 +23,20 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	}
 
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
-		Balance:  0,
-		Currency: req.Currency,
+		Owner:      req.Owner,
+		Balance:    0,
+		PropertyID: req.PropertyID,
 	}
 
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "foreign_key_violation", "unique_violation":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

@@ -10,10 +10,10 @@ import (
 )
 
 type transferRequest struct {
-	FromAccountID int64  `json:"from_account_id" binding:"required,min=1"`
-	ToAccountID   int64  `json:"to_account_id" binding:"required,min=1"`
-	Amount        int64  `json:"amount" binding:"required,gt=0"`
-	Currency      string `json:"currency" binding:"required"`
+	FromAccountID int64 `json:"from_account_id" binding:"required,min=1"`
+	ToAccountID   int64 `json:"to_account_id" binding:"required,min=1"`
+	Amount        int64 `json:"amount" binding:"required,gt=0"`
+	PropertyID    int64 `json:"property_id" binding:"required,min=1"`
 }
 
 func (server *Server) createTransfer(ctx *gin.Context) {
@@ -23,11 +23,11 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	if !server.validAccount(ctx, req.FromAccountID, req.Currency) {
+	if !server.validAccount(ctx, req.FromAccountID, req.PropertyID) {
 		return
 	}
 
-	if !server.validAccount(ctx, req.ToAccountID, req.Currency) {
+	if !server.validAccount(ctx, req.ToAccountID, req.PropertyID) {
 		return
 	}
 
@@ -46,7 +46,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
-func (server *Server) validAccount(ctx *gin.Context, accountID int64, currency string) bool {
+func (server *Server) validAccount(ctx *gin.Context, accountID int64, propertyID int64) bool {
 	account, err := server.store.GetAccount(ctx, accountID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -58,8 +58,8 @@ func (server *Server) validAccount(ctx *gin.Context, accountID int64, currency s
 		return false
 	}
 
-	if account.Currency != currency {
-		err := fmt.Errorf("account [%d] currency mismatch: %s vs %s", accountID, account.Currency, currency)
+	if account.PropertyID != propertyID {
+		err := fmt.Errorf("account [%d] property_id mismatch: %v vs %v", accountID, account.PropertyID, propertyID)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return false
 	}

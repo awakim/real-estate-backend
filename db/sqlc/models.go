@@ -7,11 +7,11 @@ import (
 )
 
 type Account struct {
-	ID        int64     `json:"id"`
-	Owner     string    `json:"owner"`
-	Balance   int64     `json:"balance"`
-	Currency  string    `json:"currency"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         int64     `json:"id"`
+	Owner      string    `json:"owner"`
+	Balance    int64     `json:"balance"`
+	PropertyID int64     `json:"property_id"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type Entry struct {
@@ -22,6 +22,18 @@ type Entry struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type Property struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	// must be greater than or equal to zero
+	InitialBlockCount int64 `json:"initial_block_count"`
+	// must be greater than or equal to zero
+	RemainingBlockCount int64     `json:"remaining_block_count"`
+	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at"`
+}
+
 type Transfer struct {
 	ID            int64 `json:"id"`
 	FromAccountID int64 `json:"from_account_id"`
@@ -29,4 +41,15 @@ type Transfer struct {
 	// must be positive
 	Amount    int64     `json:"amount"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type User struct {
+	Username          string    `json:"username"`
+	HashedPassword    string    `json:"hashed_password"`
+	FirstName         string    `json:"first_name"`
+	LastName          string    `json:"last_name"`
+	Email             string    `json:"email"`
+	PhoneNumber       string    `json:"phone_number"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
 }

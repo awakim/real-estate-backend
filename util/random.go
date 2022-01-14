@@ -1,12 +1,16 @@
 package util
 
 import (
+	"fmt"
 	"math/rand"
 	"strings"
 	"time"
 )
 
-const alphabet = "abcdefghijklmnopqrstuvwxyz"
+const (
+	numbers  = "1234567890"
+	alphabet = "abcdefghijklmnopqrstuvwxyz"
+)
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -30,6 +34,19 @@ func RandomString(n int) string {
 	return sb.String()
 }
 
+// RandomString generates a random string of length n
+func RandomPhone() string {
+	var sb strings.Builder
+	k := len(numbers)
+
+	for i := 0; i < 8; i++ {
+		c := numbers[rand.Intn(k)]
+		sb.WriteByte(c)
+	}
+
+	return sb.String()
+}
+
 // RandomOwner generates a random owner name
 func RandomOwner() string {
 	return RandomString(6)
@@ -40,9 +57,17 @@ func RandomMoney() int64 {
 	return RandomInt(0, 1000)
 }
 
-// RandomCurrency generates a random currency code
-func RandomCurrency() string {
-	currencies := []string{"EUR", "USD", "CAD"}
-	n := len(currencies)
-	return currencies[rand.Intn(n)]
+// RandomPropertyID generates a random property_id
+func RandomPropertyID() int64 {
+	return RandomInt(0, 1000)
+}
+
+// RandomEmail generates a random email
+func RandomEmail() string {
+	return fmt.Sprintf("%s@email.com", RandomString(6))
+}
+
+// RandomPhoneNumber generates a random email
+func RandomPhoneNumber() string {
+	return fmt.Sprintf("+336%s", RandomPhone())
 }

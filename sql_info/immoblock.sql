@@ -13,7 +13,7 @@ CREATE TABLE "accounts" (
   "id" bigserial PRIMARY KEY,
   "owner" varchar NOT NULL,
   "balance" bigint NOT NULL,
-  "currency" varchar NOT NULL,
+  "property_id" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
@@ -42,7 +42,7 @@ ALTER TABLE "transfers" ADD FOREIGN KEY ("to_account_id") REFERENCES "accounts" 
 
 CREATE INDEX ON "accounts" ("owner");
 
-CREATE UNIQUE INDEX ON "accounts" ("owner", "currency");
+CREATE UNIQUE INDEX ON "accounts" ("owner", "property_id");
 
 CREATE INDEX ON "entries" ("account_id");
 

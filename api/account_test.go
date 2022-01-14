@@ -19,12 +19,11 @@ import (
 
 func TestGetAccountAPI(t *testing.T) {
 	account := randomAccount()
-
 	testCases := []struct {
 		name          string
 		accountID     int64
 		buildStubs    func(store *mockdb.MockStore)
-		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
 	}{
 		{
 			name:      "OK",
@@ -37,11 +36,11 @@ func TestGetAccountAPI(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-				requireBodyMatchAccount(t, recorder.Body, account)
+				requireBodyMatchAccounts(t, recorder.Body, account)
 			},
 		},
 		{
-			name:      "Not Found",
+			name:      "NotFound",
 			accountID: account.ID,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -79,26 +78,18 @@ func TestGetAccountAPI(t *testing.T) {
 			},
 		},
 	}
-
 	for i := range testCases {
 		tc := testCases[i]
-
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-
 			store := mockdb.NewMockStore(ctrl)
-			// build stubs
 			tc.buildStubs(store)
-
-			// start test server and send request
 			server := NewServer(store)
 			recorder := httptest.NewRecorder()
-
 			url := fmt.Sprintf("/accounts/%d", tc.accountID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
-
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
@@ -107,14 +98,14 @@ func TestGetAccountAPI(t *testing.T) {
 
 func randomAccount() db.Account {
 	return db.Account{
-		ID:       util.RandomInt(1, 1000),
-		Owner:    util.RandomOwner(),
-		Balance:  util.RandomMoney(),
-		Currency: util.RandomCurrency(),
+		ID:         util.RandomInt(1, 1000),
+		Owner:      util.RandomOwner(),
+		Balance:    util.RandomMoney(),
+		PropertyID: util.RandomPropertyID(),
 	}
 }
 
-func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account db.Account) {
+func requireBodyMatchAccounts(t *testing.T, body *bytes.Buffer, account db.Account) {
 	data, err := ioutil.ReadAll(body)
 	require.NoError(t, err)
 

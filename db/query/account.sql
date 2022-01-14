@@ -2,7 +2,7 @@
 INSERT INTO accounts (
   owner,
   balance,
-  currency
+  property_id
 ) VALUES (
   $1, $2, $3
 ) RETURNING *;
