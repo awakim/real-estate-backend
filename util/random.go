@@ -59,7 +59,7 @@ func RandomMoney() int64 {
 
 // RandomPropertyID generates a random property_id
 func RandomPropertyID() int64 {
-	return RandomInt(0, 1000)
+	return RandomInt(1, 1000)
 }
 
 // RandomEmail generates a random email

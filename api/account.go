@@ -2,17 +2,19 @@ package api
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"net/http"
 
 	db "github.com/awakim/immoblock-backend/db/sqlc"
+	"github.com/awakim/immoblock-backend/token"
 	"github.com/lib/pq"
 
 	"github.com/gin-gonic/gin"
 )
 
 type createAccountRequest struct {
-	Owner      string `json:"owner" binding:"required"`
-	PropertyID int64  `json:"property_id" binding:"required"`
+	PropertyID int64 `json:"property_id" binding:"required,min=1"`
 }
 
 func (server *Server) createAccount(ctx *gin.Context) {
@@ -22,8 +24,10 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	fmt.Println(authPayload)
 	arg := db.CreateAccountParams{
-		Owner:      req.Owner,
+		Owner:      authPayload.Username,
 		Balance:    0,
 		PropertyID: req.PropertyID,
 	}
@@ -66,6 +70,13 @@ func (server *Server) getAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.Username {
+		err := errors.New("account does not belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -81,16 +92,19 @@ func (server *Server) listAccounts(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.ListAccountsParams{
+		Owner:  authPayload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
 
-	account, err := server.store.ListAccounts(ctx, arg)
+	accounts, err := server.store.ListAccounts(ctx, arg)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, account)
+	ctx.JSON(http.StatusOK, accounts)
 }

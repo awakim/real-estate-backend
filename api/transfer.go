@@ -2,10 +2,12 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	db "github.com/awakim/immoblock-backend/db/sqlc"
+	"github.com/awakim/immoblock-backend/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,11 +25,19 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	if !server.validAccount(ctx, req.FromAccountID, req.PropertyID) {
+	fromAccount, valid := server.validAccount(ctx, req.FromAccountID, req.PropertyID)
+	if !valid {
 		return
 	}
 
-	if !server.validAccount(ctx, req.ToAccountID, req.PropertyID) {
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if fromAccount.Owner != authPayload.Username {
+		err := errors.New("from account does not belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+	_, valid = server.validAccount(ctx, req.ToAccountID, req.PropertyID)
+	if !valid {
 		return
 	}
 
@@ -46,23 +56,33 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
-func (server *Server) validAccount(ctx *gin.Context, accountID int64, propertyID int64) bool {
+func (server *Server) validAccount(ctx *gin.Context, accountID int64, propertyID int64) (db.Account, bool) {
 	account, err := server.store.GetAccount(ctx, accountID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return false
+			return account, false
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return account, false
+	}
+
+	_, err = server.store.GetProperty(ctx, propertyID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return account, false
 		}
 
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false
+		return account, false
 	}
 
 	if account.PropertyID != propertyID {
 		err := fmt.Errorf("account [%d] property_id mismatch: %v vs %v", accountID, account.PropertyID, propertyID)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return false
+		return account, false
 	}
 
-	return true
+	return account, true
 }
