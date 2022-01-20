@@ -1,5 +1,8 @@
+docker-network:
+	docker network create immoblock-network
+
 postgres:
-	docker run --name postgres14 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:14.1-alpine3.15
+	docker run --name postgres14 --network immoblock-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:14.1-alpine3.15
 
 createdb:
 	docker exec -it postgres14 createdb --username=root --owner=root immoblock
