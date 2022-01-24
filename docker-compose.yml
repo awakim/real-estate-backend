@@ -18,9 +18,11 @@ services:
       - DB_SOURCE=postgresql://root:secret@postgres:5432/immoblock?sslmode=disable
     entrypoint:
       [
+        "/bin/sh",
         "/app/wait-for.sh",
         "postgres:5432",
         "--",
+        "/bin/sh",
         "/app/start.sh"
       ]
     command: [ "/app/main" ]
