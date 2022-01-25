@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"testing"
 
+	mockcache "github.com/awakim/immoblock-backend/cache/mock"
 	mockdb "github.com/awakim/immoblock-backend/db/mock"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
 	"github.com/awakim/immoblock-backend/util"
@@ -194,7 +195,9 @@ func TestCreateUserAPI(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store)
+			cache := mockcache.NewMockCache(ctrl)
+
+			server := newTestServer(t, store, cache)
 			recorder := httptest.NewRecorder()
 
 			// Marshal body data to JSON

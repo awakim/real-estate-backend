@@ -4,6 +4,9 @@ docker-network:
 postgres:
 	docker run --name postgres14 --network immoblock-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:14.1-alpine3.15
 
+redis:
+	docker run --name redis6 --network immoblock-network -p 6379:6379 -d redis:alpine
+
 createdb:
 	docker exec -it postgres14 createdb --username=root --owner=root immoblock
 
@@ -32,8 +35,11 @@ test:
 server:
 	go run main.go
 
-mock:
+mockdb:
 	mockgen -package mockdb -destination db/mock/store.go github.com/awakim/immoblock-backend/db/sqlc Store
+
+mockcache:
+	mockgen -package mockcache -destination cache/mock/store.go github.com/awakim/immoblock-backend/cache/redis Cache
 
 migratecreate:
 	migrate create -ext sql -dir db/migration -seq $(migration)

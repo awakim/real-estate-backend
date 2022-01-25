@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	mockcache "github.com/awakim/immoblock-backend/cache/mock"
 	mockdb "github.com/awakim/immoblock-backend/db/mock"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
 	"github.com/awakim/immoblock-backend/token"
@@ -301,7 +302,9 @@ func TestTransferAPI(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store)
+			cache := mockcache.NewMockCache(ctrl)
+
+			server := newTestServer(t, store, cache)
 			recorder := httptest.NewRecorder()
 
 			// Marshal body data to JSON
