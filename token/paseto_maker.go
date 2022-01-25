@@ -38,6 +38,15 @@ func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (
 	return maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
 }
 
+func (maker *PasetoMaker) CreateRefreshToken(username string, duration time.Duration) (string, string, error) {
+	payload, tokenID, err := NewRefreshPayload(username, duration)
+	if err != nil {
+		return "", "", err
+	}
+	token, err := maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
+	return token, tokenID, err
+}
+
 // VerifyToken checks if the token is valid or not
 func (maker *PasetoMaker) VerifyToken(token string) (*Payload, error) {
 	payload := &Payload{}

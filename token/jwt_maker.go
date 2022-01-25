@@ -27,6 +27,18 @@ func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (str
 	return token.SignedString([]byte(maker.secretKey))
 }
 
+// CreateRefreshToken creates a new token for a specific username and duration
+func (maker *JWTMaker) CreateRefreshToken(username string, duration time.Duration) (string, string, error) {
+	payload, tokenID, err := NewRefreshPayload(username, duration)
+	if err != nil {
+		return "", "", err
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
+	ss, err := token.SignedString([]byte(maker.secretKey))
+	return ss, tokenID, err
+}
+
 // VerifyToken checks if the token is valid or not
 func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
