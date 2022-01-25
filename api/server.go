@@ -12,11 +12,12 @@ import (
 
 // Server serves HTTP requests for our banking service.
 type Server struct {
-	config     util.Config
-	store      db.Store
-	cache      cache.Cache
-	tokenMaker token.Maker
-	router     *gin.Engine
+	config      util.Config
+	store       db.Store
+	cache       cache.Cache
+	tokenMaker  token.Maker
+	router      *gin.Engine
+	corsOrigins string
 }
 
 // NewServer creates a new HTTP server and set up routing.
@@ -45,7 +46,7 @@ func (server *Server) setupRouter() {
 	router.POST("/users/login", server.loginUser)
 	router.POST("/users/refresh", server.refresh)
 
-	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	authRoutes := router.Group("/").Use(CORS(server.config.CorsOrigin), authMiddleware(server.tokenMaker))
 
 	authRoutes.POST("/accounts", server.createAccount)
 	authRoutes.GET("/accounts/:id", server.getAccount)
