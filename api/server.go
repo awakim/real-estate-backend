@@ -12,11 +12,11 @@ import (
 
 // Server serves HTTP requests for our banking service.
 type Server struct {
-	config     util.Config
-	store      db.Store
-	cache      cache.Cache
-	tokenMaker token.Maker
-	router     *gin.Engine
+	Config     util.Config
+	Store      db.Store
+	Cache      cache.Cache
+	TokenMaker token.Maker
+	Router     *gin.Engine
 }
 
 // NewServer creates a new HTTP server and set up routing.
@@ -27,10 +27,10 @@ func NewServer(config util.Config, store db.Store, cache cache.Cache) (*Server, 
 	}
 
 	server := &Server{
-		config:     config,
-		store:      store,
-		cache:      cache,
-		tokenMaker: tokenMaker,
+		Config:     config,
+		Store:      store,
+		Cache:      cache,
+		TokenMaker: tokenMaker,
 	}
 
 	server.setupRouter()
@@ -40,13 +40,13 @@ func NewServer(config util.Config, store db.Store, cache cache.Cache) (*Server, 
 func (server *Server) setupRouter() {
 
 	router := gin.Default()
-	router.Use(CORS(server.config.CorsOrigins))
+	router.Use(CORS(server.Config.CorsOrigins))
 
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
 	router.POST("/users/refresh", server.refresh)
 
-	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	authRoutes := router.Group("/").Use(authMiddleware(server.TokenMaker))
 
 	authRoutes.POST("/accounts", server.createAccount)
 	authRoutes.GET("/accounts/:id", server.getAccount)
@@ -54,10 +54,10 @@ func (server *Server) setupRouter() {
 
 	authRoutes.POST("/transfers", server.createTransfer)
 
-	server.router = router
+	server.Router = router
 }
 
 // Start runs the HTTP server on a specific address.
 func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+	return server.Router.Run(address)
 }

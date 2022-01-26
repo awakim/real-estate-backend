@@ -47,7 +47,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		Amount:        req.Amount,
 	}
 
-	result, err := server.store.TransferTx(ctx, arg)
+	result, err := server.Store.TransferTx(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -57,7 +57,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 }
 
 func (server *Server) validAccount(ctx *gin.Context, accountID int64, propertyID int64) (db.Account, bool) {
-	account, err := server.store.GetAccount(ctx, accountID)
+	account, err := server.Store.GetAccount(ctx, accountID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -67,7 +67,7 @@ func (server *Server) validAccount(ctx *gin.Context, accountID int64, propertyID
 		return account, false
 	}
 
-	_, err = server.store.GetProperty(ctx, propertyID)
+	_, err = server.Store.GetProperty(ctx, propertyID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))

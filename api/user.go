@@ -66,7 +66,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		PhoneNumber:    req.PhoneNumber,
 	}
 
-	user, err := server.store.CreateUser(ctx, arg)
+	user, err := server.Store.CreateUser(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {
@@ -101,7 +101,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.store.GetUser(ctx, req.Username)
+	user, err := server.Store.GetUser(ctx, req.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusUnauthorized, errors.New("invalid credentials")) // was StatusNotFound becaume unauthorized as it is subject to vulnerability
@@ -117,25 +117,25 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := server.tokenMaker.CreateToken(
+	accessToken, err := server.TokenMaker.CreateToken(
 		user.Username,
-		server.config.AccessTokenDuration,
+		server.Config.AccessTokenDuration,
 	)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	refreshToken, tokenID, err := server.tokenMaker.CreateRefreshToken(
+	refreshToken, tokenID, err := server.TokenMaker.CreateRefreshToken(
 		user.Username,
-		server.config.RefreshTokenDuration,
+		server.Config.RefreshTokenDuration,
 	)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	err = server.cache.SetRefreshToken(ctx, user.Username, tokenID, server.config.RefreshTokenDuration)
+	err = server.Cache.SetRefreshToken(ctx, user.Username, tokenID, server.Config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
