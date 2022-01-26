@@ -40,7 +40,7 @@ func NewServer(config util.Config, store db.Store, cache cache.Cache) (*Server, 
 func (server *Server) setupRouter() {
 
 	router := gin.Default()
-	router.Use(CORS(server.config.CorsOrigin))
+	router.Use(CORS(server.config.CorsOrigins))
 
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)

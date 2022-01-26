@@ -54,9 +54,10 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 	}
 }
 
-func CORS(corsOrigin string) gin.HandlerFunc {
+func CORS(corsOrigins []string) gin.HandlerFunc {
+	fmt.Println("CORS :::", corsOrigins)
 	return cors.New(cors.Config{
-		AllowOrigins:     []string{corsOrigin},
+		AllowOrigins:     corsOrigins,
 		AllowCredentials: true,
 		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Accept", "Origin", "Cache-Control", "X-Requested-With"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},

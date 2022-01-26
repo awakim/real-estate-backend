@@ -16,6 +16,12 @@ func newTestServer(t *testing.T, store db.Store, cache cache.Cache) *Server {
 	config := util.Config{
 		TokenSymmetricKey:   util.RandomString(32),
 		AccessTokenDuration: time.Minute,
+		CorsOrigins: []string{
+			"http://localhost:4200",
+			"https://localhost:4200",
+			"http://localhost:8080",
+			"https://localhost:8080",
+		},
 	}
 	server, err := NewServer(config, store, cache)
 	require.NoError(t, err)
