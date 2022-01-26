@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/spf13/viper"
@@ -17,7 +18,8 @@ type Config struct {
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
-	CorsOrigin           string        `mapstructure:"CORS_ORIGIN"`
+	StrCorsOrigins       string        `mapstructure:"CORS_ORIGIN"`
+	CorsOrigins          []string
 }
 
 // LoadConfig reads configuration from file or environment variables.
@@ -34,5 +36,7 @@ func LoadConfig(path string) (config Config, err error) {
 	}
 
 	err = viper.Unmarshal(&config)
+	json.Unmarshal([]byte(config.StrCorsOrigins), &(config.CorsOrigins))
+
 	return
 }
