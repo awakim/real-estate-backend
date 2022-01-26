@@ -22,7 +22,7 @@ func (server *Server) refresh(ctx *gin.Context) {
 		return
 	}
 
-	refreshToken, err := server.tokenMaker.VerifyToken(req.RefreshTokenString)
+	refreshToken, err := server.TokenMaker.VerifyToken(req.RefreshTokenString)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 		return
@@ -30,31 +30,31 @@ func (server *Server) refresh(ctx *gin.Context) {
 
 	prevTokenID := refreshToken.ID.String()
 	if prevTokenID != "" {
-		if err := server.cache.DeleteRefreshToken(ctx, refreshToken.Username, prevTokenID); err != nil {
+		if err := server.Cache.DeleteRefreshToken(ctx, refreshToken.Username, prevTokenID); err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}
 	}
 
-	newAccessToken, err := server.tokenMaker.CreateToken(
+	newAccessToken, err := server.TokenMaker.CreateToken(
 		refreshToken.Username,
-		server.config.AccessTokenDuration,
+		server.Config.AccessTokenDuration,
 	)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	newRefreshToken, tokenID, err := server.tokenMaker.CreateRefreshToken(
+	newRefreshToken, tokenID, err := server.TokenMaker.CreateRefreshToken(
 		refreshToken.Username,
-		server.config.RefreshTokenDuration,
+		server.Config.RefreshTokenDuration,
 	)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	err = server.cache.SetRefreshToken(ctx, refreshToken.Username, tokenID, server.config.RefreshTokenDuration)
+	err = server.Cache.SetRefreshToken(ctx, refreshToken.Username, tokenID, server.Config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
