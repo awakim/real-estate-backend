@@ -14,12 +14,11 @@ import (
 )
 
 type createUserRequest struct {
-	Username    string `json:"username" binding:"required,alphanum"`
-	Password    string `json:"password" binding:"required,min=8"`
-	FirstName   string `json:"first_name" binding:"required"`
-	LastName    string `json:"last_name" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
-	PhoneNumber string `json:"phone_number" binding:"required,min=8"`
+	Username  string `json:"username" binding:"required,alphanum"`
+	Password  string `json:"password" binding:"required,min=8"`
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	Email     string `json:"email" binding:"required,email"`
 }
 
 type userResponse struct {
@@ -27,7 +26,6 @@ type userResponse struct {
 	FirstName         string    `json:"first_name"`
 	LastName          string    `json:"last_name"`
 	Email             string    `json:"email"`
-	PhoneNumber       string    `json:"phone_number"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
 }
@@ -38,7 +36,6 @@ func newUserResponse(user db.User) userResponse {
 		FirstName:         user.FirstName,
 		LastName:          user.LastName,
 		Email:             user.Email,
-		PhoneNumber:       user.PhoneNumber,
 		PasswordChangedAt: user.PasswordChangedAt,
 		CreatedAt:         user.CreatedAt,
 	}
@@ -63,7 +60,6 @@ func (server *Server) createUser(ctx *gin.Context) {
 		FirstName:      req.FirstName,
 		LastName:       req.LastName,
 		Email:          req.Email,
-		PhoneNumber:    req.PhoneNumber,
 	}
 
 	user, err := server.Store.CreateUser(ctx, arg)

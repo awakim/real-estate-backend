@@ -61,20 +61,20 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "OK",
 			body: gin.H{
-				"username":     user.Username,
-				"password":     password,
-				"first_name":   user.FirstName,
-				"last_name":    user.LastName,
-				"email":        user.Email,
-				"phone_number": user.PhoneNumber,
+				"username":   user.Username,
+				"password":   password,
+				"first_name": user.FirstName,
+				"last_name":  user.LastName,
+				"email":      user.Email,
+				// "phone_number": user.PhoneNumber,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.CreateUserParams{
-					Username:    user.Username,
-					FirstName:   user.FirstName,
-					LastName:    user.LastName,
-					Email:       user.Email,
-					PhoneNumber: user.PhoneNumber,
+					Username:  user.Username,
+					FirstName: user.FirstName,
+					LastName:  user.LastName,
+					Email:     user.Email,
+					// PhoneNumber: user.PhoneNumber,
 				}
 				store.EXPECT().
 					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
@@ -89,12 +89,12 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "InternalError",
 			body: gin.H{
-				"username":     user.Username,
-				"password":     password,
-				"first_name":   user.FirstName,
-				"last_name":    user.LastName,
-				"email":        user.Email,
-				"phone_number": user.PhoneNumber,
+				"username":   user.Username,
+				"password":   password,
+				"first_name": user.FirstName,
+				"last_name":  user.LastName,
+				"email":      user.Email,
+				// "phone_number": user.PhoneNumber,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -109,12 +109,12 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "DuplicateUsername",
 			body: gin.H{
-				"username":     user.Username,
-				"password":     password,
-				"first_name":   user.FirstName,
-				"last_name":    user.LastName,
-				"email":        user.Email,
-				"phone_number": user.PhoneNumber,
+				"username":   user.Username,
+				"password":   password,
+				"first_name": user.FirstName,
+				"last_name":  user.LastName,
+				"email":      user.Email,
+				// "phone_number": user.PhoneNumber,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -129,12 +129,12 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "InvalidUsername",
 			body: gin.H{
-				"username":     "invalid-user#1",
-				"password":     password,
-				"first_name":   user.FirstName,
-				"last_name":    user.LastName,
-				"email":        user.Email,
-				"phone_number": user.PhoneNumber,
+				"username":   "invalid-user#1",
+				"password":   password,
+				"first_name": user.FirstName,
+				"last_name":  user.LastName,
+				"email":      user.Email,
+				// "phone_number": user.PhoneNumber,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -148,12 +148,12 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "InvalidEmail",
 			body: gin.H{
-				"username":     user.Username,
-				"password":     password,
-				"first_name":   user.FirstName,
-				"last_name":    user.LastName,
-				"email":        "invalid-email",
-				"phone_number": user.PhoneNumber,
+				"username":   user.Username,
+				"password":   password,
+				"first_name": user.FirstName,
+				"last_name":  user.LastName,
+				"email":      "invalid-email",
+				// "phone_number": user.PhoneNumber,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -167,12 +167,12 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "TooShortPassword",
 			body: gin.H{
-				"username":     user.Username,
-				"password":     "123",
-				"first_name":   user.FirstName,
-				"last_name":    user.LastName,
-				"email":        user.Email,
-				"phone_number": user.PhoneNumber,
+				"username":   user.Username,
+				"password":   "123",
+				"first_name": user.FirstName,
+				"last_name":  user.LastName,
+				"email":      user.Email,
+				// "phone_number": user.PhoneNumber,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -225,7 +225,7 @@ func randomUser(t *testing.T) (user db.User, password string) {
 		FirstName:      util.RandomString(6),
 		LastName:       util.RandomString(6),
 		Email:          util.RandomEmail(),
-		PhoneNumber:    util.RandomPhoneNumber(),
+		// PhoneNumber:    util.RandomPhoneNumber(),
 	}
 	return
 }
@@ -242,6 +242,6 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
 	require.Equal(t, user.FirstName, gotUser.FirstName)
 	require.Equal(t, user.LastName, gotUser.LastName)
 	require.Equal(t, user.Email, gotUser.Email)
-	require.Equal(t, user.PhoneNumber, gotUser.PhoneNumber)
+	// require.Equal(t, user.PhoneNumber, gotUser.PhoneNumber)
 	require.Empty(t, gotUser.HashedPassword)
 }
