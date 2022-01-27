@@ -18,8 +18,8 @@ type Config struct {
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
-	StrCorsOrigins       string        `mapstructure:"STR_CORS_ORIGIN"`
-	CorsOrigins          []string      `mapstructure:"CORS_ORIGIN"`
+	StrCorsOrigins       string        `mapstructure:"CORS_ORIGIN"`
+	CorsOrigins          []string
 }
 
 // LoadConfig reads configuration from file or environment variables.
