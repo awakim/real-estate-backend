@@ -44,4 +44,4 @@ mockcache:
 migratecreate:
 	migrate create -ext sql -dir db/migration -seq $(migration)
 
-.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc server mock migratecreate
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc server mock migratecreate test
