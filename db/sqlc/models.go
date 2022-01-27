@@ -3,6 +3,7 @@
 package db
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -44,12 +45,12 @@ type Transfer struct {
 }
 
 type User struct {
-	Username          string    `json:"username"`
-	HashedPassword    string    `json:"hashed_password"`
-	FirstName         string    `json:"first_name"`
-	LastName          string    `json:"last_name"`
-	Email             string    `json:"email"`
-	PhoneNumber       string    `json:"phone_number"`
-	PasswordChangedAt time.Time `json:"password_changed_at"`
-	CreatedAt         time.Time `json:"created_at"`
+	Username          string         `json:"username"`
+	HashedPassword    string         `json:"hashed_password"`
+	FirstName         string         `json:"first_name"`
+	LastName          string         `json:"last_name"`
+	Email             string         `json:"email"`
+	PhoneNumber       sql.NullString `json:"phone_number"`
+	PasswordChangedAt time.Time      `json:"password_changed_at"`
+	CreatedAt         time.Time      `json:"created_at"`
 }

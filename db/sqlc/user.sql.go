@@ -13,10 +13,9 @@ INSERT INTO users (
   hashed_password,
   first_name,
   last_name,
-  email,
-  phone_number
+  email
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
+  $1, $2, $3, $4, $5
 ) RETURNING username, hashed_password, first_name, last_name, email, phone_number, password_changed_at, created_at
 `
 
@@ -26,7 +25,6 @@ type CreateUserParams struct {
 	FirstName      string `json:"first_name"`
 	LastName       string `json:"last_name"`
 	Email          string `json:"email"`
-	PhoneNumber    string `json:"phone_number"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -36,7 +34,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.FirstName,
 		arg.LastName,
 		arg.Email,
-		arg.PhoneNumber,
 	)
 	var i User
 	err := row.Scan(
