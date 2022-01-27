@@ -4,15 +4,15 @@ import (
 	"fmt"
 
 	cache "github.com/awakim/immoblock-backend/cache/redis"
+	"github.com/awakim/immoblock-backend/config"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
 	"github.com/awakim/immoblock-backend/token"
-	"github.com/awakim/immoblock-backend/util"
 	"github.com/gin-gonic/gin"
 )
 
 // Server serves HTTP requests for our banking service.
 type Server struct {
-	Config     util.Config
+	Config     config.Config
 	Store      db.Store
 	Cache      cache.Cache
 	TokenMaker token.Maker
@@ -20,7 +20,7 @@ type Server struct {
 }
 
 // NewServer creates a new HTTP server and set up routing.
-func NewServer(config util.Config, store db.Store, cache cache.Cache) (*Server, error) {
+func NewServer(config config.Config, store db.Store, cache cache.Cache) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
