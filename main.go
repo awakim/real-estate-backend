@@ -12,18 +12,19 @@ import (
 
 	"github.com/awakim/immoblock-backend/api"
 	cache "github.com/awakim/immoblock-backend/cache/redis"
+	"github.com/awakim/immoblock-backend/config"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
-	"github.com/awakim/immoblock-backend/util"
 	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
 )
 
 func main() {
 
+	ts := time.Now()
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	config, err := util.LoadConfig(".")
+	config, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
@@ -56,7 +57,7 @@ func main() {
 		ReadTimeout:  3000 * time.Millisecond,
 		IdleTimeout:  3000 * time.Millisecond,
 	}
-
+	log.Printf("Time for startup: %v", time.Since(ts))
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
 	go func() {
@@ -70,15 +71,26 @@ func main() {
 
 	// Restore default behavior on the interrupt signal and notify user of shutdown.
 	stop()
-	log.Println("Shutting down gracefully.\nSend signal again to force kill.")
+	err = conn.Close()
+	if err != nil {
+		log.Fatalf("could not close DB connection %v", err)
+	}
+
+	err = rdb.Close()
+	if err != nil {
+		log.Fatalf("could not close Redis connection %v", err)
+	}
+	log.Println("Closed DB connection.")
+	log.Println("Closed Redis connection.")
+	log.Println("Shutting down gracefully. Send signal again to force kill.")
 
 	// The context is used to inform the server it has 5 seconds to finish
-	// the request it is currently handling
+	// the request it is currently handling.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
 	}
 
-	log.Println("Server exiting")
+	log.Println("Server exiting.")
 }

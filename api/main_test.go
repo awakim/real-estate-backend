@@ -6,6 +6,7 @@ import (
 	"time"
 
 	cache "github.com/awakim/immoblock-backend/cache/redis"
+	"github.com/awakim/immoblock-backend/config"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
 	"github.com/awakim/immoblock-backend/util"
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ import (
 )
 
 func newTestServer(t *testing.T, store db.Store, cache cache.Cache) *Server {
-	config := util.Config{
+	config := config.Config{
 		TokenSymmetricKey:   util.RandomString(32),
 		AccessTokenDuration: time.Minute,
 		CorsOrigins: []string{
