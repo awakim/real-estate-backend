@@ -55,7 +55,6 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 }
 
 func CORS(corsOrigins []string) gin.HandlerFunc {
-	fmt.Println("CORS :::", corsOrigins)
 	return cors.New(cors.Config{
 		AllowOrigins:     corsOrigins,
 		AllowCredentials: true,
