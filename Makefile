@@ -30,6 +30,9 @@ sqlc:
 	sqlc generate
 
 test:
+	go test -v -cover ./...
+
+nocache-test:
 	go clean -testcache && go test -v -cover ./...
 
 server:
