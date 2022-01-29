@@ -30,14 +30,14 @@ func (server *Server) refresh(ctx *gin.Context) {
 
 	prevTokenID := refreshToken.ID.String()
 	if prevTokenID != "" {
-		if err := server.Cache.DeleteRefreshToken(ctx, refreshToken.Username, prevTokenID); err != nil {
+		if err := server.Cache.DeleteRefreshToken(ctx, refreshToken.UserID.String(), prevTokenID); err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}
 	}
 
 	newAccessToken, err := server.TokenMaker.CreateToken(
-		refreshToken.Username,
+		refreshToken.UserID,
 		server.Config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -46,7 +46,7 @@ func (server *Server) refresh(ctx *gin.Context) {
 	}
 
 	newRefreshToken, tokenID, err := server.TokenMaker.CreateRefreshToken(
-		refreshToken.Username,
+		refreshToken.UserID,
 		server.Config.RefreshTokenDuration,
 	)
 	if err != nil {
@@ -54,7 +54,7 @@ func (server *Server) refresh(ctx *gin.Context) {
 		return
 	}
 
-	err = server.Cache.SetRefreshToken(ctx, refreshToken.Username, tokenID, server.Config.RefreshTokenDuration)
+	err = server.Cache.SetRefreshToken(ctx, refreshToken.UserID.String(), tokenID, server.Config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

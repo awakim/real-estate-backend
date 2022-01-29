@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/awakim/immoblock-backend/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -12,13 +13,14 @@ func TestJWTMaker(t *testing.T) {
 	maker, err := NewJWTMaker(util.RandomString(32))
 	require.NoError(t, err)
 
-	username := util.RandomOwner()
+	userID, err := uuid.NewRandom()
+	require.NoError(t, err)
 	duration := time.Minute
 
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(duration)
 
-	token, err := maker.CreateToken(username, duration)
+	token, err := maker.CreateToken(userID, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
@@ -27,7 +29,7 @@ func TestJWTMaker(t *testing.T) {
 	require.NotEmpty(t, token)
 
 	require.NotZero(t, payload.ID)
-	require.Equal(t, username, payload.Username)
+	require.Equal(t, userID, payload.UserID)
 	require.WithinDuration(t, issuedAt, payload.IssuedAt, time.Second)
 	require.WithinDuration(t, expiredAt, payload.ExpiredAt, time.Second)
 }
@@ -36,7 +38,9 @@ func TestExpiredJWTToken(t *testing.T) {
 	maker, err := NewJWTMaker(util.RandomString(32))
 	require.NoError(t, err)
 
-	token, err := maker.CreateToken(util.RandomOwner(), -time.Minute)
+	userID, err := uuid.NewRandom()
+	require.NoError(t, err)
+	token, err := maker.CreateToken(userID, -time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 

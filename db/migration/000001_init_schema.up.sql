@@ -1,6 +1,8 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE "accounts" (
   "id" bigserial PRIMARY KEY,
-  "owner" varchar NOT NULL,
+  "owner" uuid NOT NULL,
   "balance" bigint NOT NULL,
   "property_id" bigint NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
@@ -27,7 +29,7 @@ ALTER TABLE "transfers" ADD FOREIGN KEY ("from_account_id") REFERENCES "accounts
 
 ALTER TABLE "transfers" ADD FOREIGN KEY ("to_account_id") REFERENCES "accounts" ("id");
 
-CREATE INDEX ON "accounts" ("owner");
+CREATE INDEX ON "accounts" USING hash("owner");
 
 CREATE INDEX ON "entries" ("account_id");
 

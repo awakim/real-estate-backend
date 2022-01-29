@@ -8,21 +8,21 @@ import (
 
 	db "github.com/awakim/immoblock-backend/db/sqlc"
 	"github.com/awakim/immoblock-backend/util"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 
 	"github.com/gin-gonic/gin"
 )
 
 type createUserRequest struct {
-	Username  string `json:"username" binding:"required,alphanum"`
-	Password  string `json:"password" binding:"required,min=8"`
 	FirstName string `json:"first_name" binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
+	Password  string `json:"password" binding:"required,min=8"`
 	Email     string `json:"email" binding:"required,email"`
 }
 
 type userResponse struct {
-	Username          string    `json:"username"`
+	UserID            uuid.UUID `json:"user_id"`
 	FirstName         string    `json:"first_name"`
 	LastName          string    `json:"last_name"`
 	Email             string    `json:"email"`
@@ -32,7 +32,7 @@ type userResponse struct {
 
 func newUserResponse(user db.User) userResponse {
 	return userResponse{
-		Username:          user.Username,
+		UserID:            user.ID,
 		FirstName:         user.FirstName,
 		LastName:          user.LastName,
 		Email:             user.Email,
@@ -55,10 +55,9 @@ func (server *Server) createUser(ctx *gin.Context) {
 	}
 
 	arg := db.CreateUserParams{
-		Username:       req.Username,
-		HashedPassword: hashedPassword,
 		FirstName:      req.FirstName,
 		LastName:       req.LastName,
+		HashedPassword: hashedPassword,
 		Email:          req.Email,
 	}
 
@@ -80,7 +79,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 }
 
 type loginUserRequest struct {
-	Username string `json:"username" binding:"required,alphanum"`
+	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
 }
 
@@ -97,7 +96,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.Store.GetUser(ctx, req.Username)
+	user, err := server.Store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusUnauthorized, errors.New("invalid credentials")) // was StatusNotFound becaume unauthorized as it is subject to vulnerability
@@ -114,7 +113,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	accessToken, err := server.TokenMaker.CreateToken(
-		user.Username,
+		user.ID,
 		server.Config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -123,7 +122,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	refreshToken, tokenID, err := server.TokenMaker.CreateRefreshToken(
-		user.Username,
+		user.ID,
 		server.Config.RefreshTokenDuration,
 	)
 	if err != nil {
@@ -131,7 +130,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	err = server.Cache.SetRefreshToken(ctx, user.Username, tokenID, server.Config.RefreshTokenDuration)
+	err = server.Cache.SetRefreshToken(ctx, user.ID.String(), tokenID, server.Config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

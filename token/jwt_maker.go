@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 )
 
 // JWTMaker is a JSON Web Token maker
@@ -16,9 +17,9 @@ func NewJWTMaker(secretKey string) (Maker, error) {
 	return &JWTMaker{secretKey}, nil
 }
 
-// CreateToken creates a new token for a specific username and duration
-func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (string, error) {
-	payload, err := NewPayload(username, duration)
+// CreateToken creates a new token for a specific userID and duration
+func (maker *JWTMaker) CreateToken(userID uuid.UUID, duration time.Duration) (string, error) {
+	payload, err := NewPayload(userID, duration)
 	if err != nil {
 		return "", err
 	}
@@ -27,9 +28,9 @@ func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (str
 	return token.SignedString([]byte(maker.secretKey))
 }
 
-// CreateRefreshToken creates a new token for a specific username and duration
-func (maker *JWTMaker) CreateRefreshToken(username string, duration time.Duration) (string, string, error) {
-	payload, tokenID, err := NewRefreshPayload(username, duration)
+// CreateRefreshToken creates a new token for a specific userID and duration
+func (maker *JWTMaker) CreateRefreshToken(userID uuid.UUID, duration time.Duration) (string, string, error) {
+	payload, tokenID, err := NewRefreshPayload(userID, duration)
 	if err != nil {
 		return "", "", err
 	}

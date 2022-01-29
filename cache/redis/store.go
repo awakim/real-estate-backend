@@ -8,8 +8,8 @@ import (
 )
 
 type Cache interface {
-	SetRefreshToken(ctx context.Context, username string, tokenID string, expiration time.Duration) error
-	DeleteRefreshToken(ctx context.Context, username string, tokenID string) error
+	SetRefreshToken(ctx context.Context, userID string, tokenID string, expiration time.Duration) error
+	DeleteRefreshToken(ctx context.Context, userID string, tokenID string) error
 }
 
 type RedisStore struct {
