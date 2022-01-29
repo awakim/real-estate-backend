@@ -1,5 +1,5 @@
 CREATE TABLE "users" (
-  "username" varchar PRIMARY KEY,
+  "id" uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   "hashed_password" varchar NOT NULL,
   "first_name" varchar NOT NULL,
   "last_name" varchar NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE "users" (
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-ALTER TABLE "accounts" ADD FOREIGN KEY ("owner") REFERENCES "users" ("username");
+ALTER TABLE "accounts" ADD FOREIGN KEY ("owner") REFERENCES "users" ("id");
 
 -- CREATE UNIQUE INDEX ON "accounts" ("owner", "property_id");
 ALTER TABLE "accounts" ADD CONSTRAINT "owner_property_id_key" UNIQUE ("owner","property_id");

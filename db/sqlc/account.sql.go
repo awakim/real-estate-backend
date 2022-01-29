@@ -5,6 +5,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const addAccountBalance = `-- name: AddAccountBalance :one
@@ -43,9 +45,9 @@ INSERT INTO accounts (
 `
 
 type CreateAccountParams struct {
-	Owner      string `json:"owner"`
-	Balance    int64  `json:"balance"`
-	PropertyID int64  `json:"property_id"`
+	Owner      uuid.UUID `json:"owner"`
+	Balance    int64     `json:"balance"`
+	PropertyID int64     `json:"property_id"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
@@ -117,9 +119,9 @@ OFFSET $3
 `
 
 type ListAccountsParams struct {
-	Owner  string `json:"owner"`
-	Limit  int32  `json:"limit"`
-	Offset int32  `json:"offset"`
+	Owner  uuid.UUID `json:"owner"`
+	Limit  int32     `json:"limit"`
+	Offset int32     `json:"offset"`
 }
 
 func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {

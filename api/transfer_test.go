@@ -39,9 +39,9 @@ func TestTransferAPI(t *testing.T) {
 	user2, _ := randomUser(t)
 	user3, _ := randomUser(t)
 
-	account1 := randomAccount(user1.Username)
-	account2 := randomAccount(user2.Username)
-	account3 := randomAccount(user3.Username)
+	account1 := randomAccount(user1.ID)
+	account2 := randomAccount(user2.ID)
+	account3 := randomAccount(user3.ID)
 
 	property1 := randomProperty(t)
 	property2 := randomProperty(t)
@@ -65,7 +65,7 @@ func TestTransferAPI(t *testing.T) {
 				"property_id":     property1.ID,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user1.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user1.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account1.ID)).Times(1).Return(account1, nil)
@@ -93,7 +93,7 @@ func TestTransferAPI(t *testing.T) {
 				"property_id":     property1.ID,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user2.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user2.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account1.ID)).Times(1).Return(account1, nil)
@@ -136,7 +136,7 @@ func TestTransferAPI(t *testing.T) {
 				"property_id":     property1.ID,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user1.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user1.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account1.ID)).Times(1).Return(db.Account{}, sql.ErrNoRows)
@@ -158,7 +158,7 @@ func TestTransferAPI(t *testing.T) {
 				"property_id":     property1.ID,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user1.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user1.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account1.ID)).Times(1).Return(account1, nil)
@@ -180,7 +180,7 @@ func TestTransferAPI(t *testing.T) {
 				"property_id":     property1.ID,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user3.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user3.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account3.ID)).Times(1).Return(account3, nil)
@@ -202,7 +202,7 @@ func TestTransferAPI(t *testing.T) {
 		// 		"property_id":     propertyID1,
 		// 	},
 		// 	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, time.Minute)
+		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 		// 	},
 		// 	buildStubs: func(store *mockdb.MockStore) {
 		// 		store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account1.ID)).Times(1).Return(account1, nil)
@@ -222,7 +222,7 @@ func TestTransferAPI(t *testing.T) {
 		// 		"property_id":     "XYZ",
 		// 	},
 		// 	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, time.Minute)
+		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 		// 	},
 		// 	buildStubs: func(store *mockdb.MockStore) {
 		// 		store.EXPECT().GetAccount(gomock.Any(), gomock.Any()).Times(0)
@@ -241,7 +241,7 @@ func TestTransferAPI(t *testing.T) {
 		// 		"property_id":     propertyID1,
 		// 	},
 		// 	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, time.Minute)
+		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 		// 	},
 		// 	buildStubs: func(store *mockdb.MockStore) {
 		// 		store.EXPECT().GetAccount(gomock.Any(), gomock.Any()).Times(0)
@@ -260,7 +260,7 @@ func TestTransferAPI(t *testing.T) {
 		// 		"property_id":     propertyID1,
 		// 	},
 		// 	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, time.Minute)
+		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 		// 	},
 		// 	buildStubs: func(store *mockdb.MockStore) {
 		// 		store.EXPECT().GetAccount(gomock.Any(), gomock.Any()).Times(1).Return(db.Account{}, sql.ErrConnDone)
@@ -279,7 +279,7 @@ func TestTransferAPI(t *testing.T) {
 		// 		"property_id":     propertyID1,
 		// 	},
 		// 	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, time.Minute)
+		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 		// 	},
 		// 	buildStubs: func(store *mockdb.MockStore) {
 		// 		store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account1.ID)).Times(1).Return(account1, nil)

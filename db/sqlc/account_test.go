@@ -15,7 +15,7 @@ func createRandomAccount(t *testing.T) Account {
 	property := createRandomProperty(t)
 
 	arg := CreateAccountParams{
-		Owner:      user.Username,
+		Owner:      user.ID,
 		Balance:    util.RandomMoney(),
 		PropertyID: property.ID,
 	}

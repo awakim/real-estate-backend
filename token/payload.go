@@ -16,13 +16,13 @@ var (
 // Payload contains the payload data of the token
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
+	UserID    uuid.UUID `json:"user_id"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
 // NewPayload creates a new token payload with a specific username and duration
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
+func NewPayload(userID uuid.UUID, duration time.Duration) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 
 	payload := &Payload{
 		ID:        tokenID,
-		Username:  username,
+		UserID:    userID,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}
@@ -38,7 +38,7 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 }
 
 // NewRefreshPayload creates a new token payload with a specific username and duration
-func NewRefreshPayload(username string, duration time.Duration) (*Payload, string, error) {
+func NewRefreshPayload(userID uuid.UUID, duration time.Duration) (*Payload, string, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, "", err
@@ -46,7 +46,7 @@ func NewRefreshPayload(username string, duration time.Duration) (*Payload, strin
 
 	payload := &Payload{
 		ID:        tokenID,
-		Username:  username,
+		UserID:    userID,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}

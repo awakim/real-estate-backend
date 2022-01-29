@@ -5,22 +5,22 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  username,
   hashed_password,
   first_name,
   last_name,
   email
 ) VALUES (
-  $1, $2, $3, $4, $5
-) RETURNING username, hashed_password, first_name, last_name, email, phone_number, password_changed_at, created_at
+  $1, $2, $3, $4
+) RETURNING id, hashed_password, first_name, last_name, email, phone_number, password_changed_at, created_at
 `
 
 type CreateUserParams struct {
-	Username       string `json:"username"`
 	HashedPassword string `json:"hashed_password"`
 	FirstName      string `json:"first_name"`
 	LastName       string `json:"last_name"`
@@ -29,7 +29,6 @@ type CreateUserParams struct {
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser,
-		arg.Username,
 		arg.HashedPassword,
 		arg.FirstName,
 		arg.LastName,
@@ -37,7 +36,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	)
 	var i User
 	err := row.Scan(
-		&i.Username,
+		&i.ID,
 		&i.HashedPassword,
 		&i.FirstName,
 		&i.LastName,
@@ -50,15 +49,36 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUser = `-- name: GetUser :one
-SELECT username, hashed_password, first_name, last_name, email, phone_number, password_changed_at, created_at FROM users
-WHERE username = $1 LIMIT 1
+SELECT id, hashed_password, first_name, last_name, email, phone_number, password_changed_at, created_at FROM users
+WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, username)
+func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, id)
 	var i User
 	err := row.Scan(
-		&i.Username,
+		&i.ID,
+		&i.HashedPassword,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.PasswordChangedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, hashed_password, first_name, last_name, email, phone_number, password_changed_at, created_at FROM users
+WHERE email = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
 		&i.HashedPassword,
 		&i.FirstName,
 		&i.LastName,

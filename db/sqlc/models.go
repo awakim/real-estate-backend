@@ -5,11 +5,13 @@ package db
 import (
 	"database/sql"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Account struct {
 	ID         int64     `json:"id"`
-	Owner      string    `json:"owner"`
+	Owner      uuid.UUID `json:"owner"`
 	Balance    int64     `json:"balance"`
 	PropertyID int64     `json:"property_id"`
 	CreatedAt  time.Time `json:"created_at"`
@@ -45,7 +47,7 @@ type Transfer struct {
 }
 
 type User struct {
-	Username          string         `json:"username"`
+	ID                uuid.UUID      `json:"id"`
 	HashedPassword    string         `json:"hashed_password"`
 	FirstName         string         `json:"first_name"`
 	LastName          string         `json:"last_name"`
