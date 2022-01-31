@@ -15,9 +15,9 @@ import (
 )
 
 type createUserRequest struct {
+	FirstName string `json:"first_name" binding:"required,alpha"`
+	LastName  string `json:"last_name" binding:"required,alpha"`
 	Email     string `json:"email" binding:"required,email"`
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
 	Password  string `json:"password" binding:"required,min=8"`
 }
 
@@ -100,7 +100,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	user, err := server.Store.GetUser(ctx, req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusUnauthorized, errors.New("invalid credentials")) // was StatusNotFound becaume unauthorized as it is subject to vulnerability
+			ctx.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid credentials"))) // was StatusNotFound becaume unauthorized as it is subject to vulnerability
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
