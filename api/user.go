@@ -113,33 +113,34 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := server.TokenMaker.CreateToken(
+	newAT, newATID, newRT, newRTID, err := server.TokenMaker.CreateTokenPair(
 		user.ID,
 		server.Config.AccessTokenDuration,
-	)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	refreshToken, tokenID, err := server.TokenMaker.CreateRefreshToken(
-		user.ID,
 		server.Config.RefreshTokenDuration,
 	)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
-	err = server.Cache.SetRefreshToken(ctx, user.ID.String(), tokenID, server.Config.RefreshTokenDuration)
+	err = server.Cache.SetRefreshToken(ctx, user.ID.String(), newATID, server.Config.RefreshTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	err = server.Cache.SetRefreshToken(ctx, user.ID.String(), newRTID, server.Config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	rsp := loginUserResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken:  newAT,
+		RefreshToken: newRT,
 		User:         newUserResponse(user),
 	}
 	ctx.JSON(http.StatusOK, rsp)

@@ -21,6 +21,12 @@ type Payload struct {
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
+// TokenPair contains the token pair returned at login or refresh
+type TokenPair struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 // NewPayload creates a new token payload with a specific username and duration
 func NewPayload(userID uuid.UUID, duration time.Duration) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
@@ -38,10 +44,10 @@ func NewPayload(userID uuid.UUID, duration time.Duration) (*Payload, error) {
 }
 
 // NewRefreshPayload creates a new token payload with a specific username and duration
-func NewRefreshPayload(userID uuid.UUID, duration time.Duration) (*Payload, string, error) {
+func NewRefreshPayload(userID uuid.UUID, duration time.Duration) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	payload := &Payload{
@@ -50,7 +56,7 @@ func NewRefreshPayload(userID uuid.UUID, duration time.Duration) (*Payload, stri
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}
-	return payload, tokenID.String(), nil
+	return payload, nil
 }
 
 // Valid checks if the token payload is valid or not
