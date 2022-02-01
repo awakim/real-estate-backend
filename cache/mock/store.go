@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 	time "time"
 
+	token "github.com/awakim/immoblock-backend/token"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -49,16 +50,30 @@ func (mr *MockCacheMockRecorder) DeleteRefreshToken(arg0, arg1, arg2 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshToken", reflect.TypeOf((*MockCache)(nil).DeleteRefreshToken), arg0, arg1, arg2)
 }
 
-// SetRefreshToken mocks base method.
-func (m *MockCache) SetRefreshToken(arg0 context.Context, arg1, arg2 string, arg3 time.Duration) error {
+// GetTokenData mocks base method.
+func (m *MockCache) GetTokenData(arg0 context.Context, arg1 token.Payload) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetRefreshToken", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "GetTokenData", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// SetRefreshToken indicates an expected call of SetRefreshToken.
-func (mr *MockCacheMockRecorder) SetRefreshToken(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+// GetTokenData indicates an expected call of GetTokenData.
+func (mr *MockCacheMockRecorder) GetTokenData(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRefreshToken", reflect.TypeOf((*MockCache)(nil).SetRefreshToken), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenData", reflect.TypeOf((*MockCache)(nil).GetTokenData), arg0, arg1)
+}
+
+// SetTokenData mocks base method.
+func (m *MockCache) SetTokenData(arg0 context.Context, arg1 token.Payload, arg2 time.Duration, arg3 token.Payload, arg4 time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetTokenData", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetTokenData indicates an expected call of SetTokenData.
+func (mr *MockCacheMockRecorder) SetTokenData(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetTokenData", reflect.TypeOf((*MockCache)(nil).SetTokenData), arg0, arg1, arg2, arg3, arg4)
 }

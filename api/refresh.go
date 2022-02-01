@@ -36,7 +36,7 @@ func (server *Server) refresh(ctx *gin.Context) {
 		}
 	}
 
-	newAT, newATID, newRT, newRTID, err := server.TokenMaker.CreateTokenPair(
+	newAT, newATST, newRT, newRTST, err := server.TokenMaker.CreateTokenPair(
 		refreshToken.UserID,
 		server.Config.AccessTokenDuration,
 		server.Config.RefreshTokenDuration,
@@ -46,21 +46,15 @@ func (server *Server) refresh(ctx *gin.Context) {
 		return
 	}
 
-	err = server.Cache.SetRefreshToken(ctx, refreshToken.UserID.String(), newATID, server.Config.AccessTokenDuration)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	err = server.Cache.SetRefreshToken(ctx, refreshToken.UserID.String(), newRTID, server.Config.RefreshTokenDuration)
+	err = server.Cache.SetTokenData(ctx, newAT, server.Config.AccessTokenDuration, newRT, server.Config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	rsp := refreshResponse{
-		AccessToken:  newAT,
-		RefreshToken: newRT,
+		AccessToken:  newATST,
+		RefreshToken: newRTST,
 	}
 	ctx.JSON(http.StatusOK, rsp)
 }

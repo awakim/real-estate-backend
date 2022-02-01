@@ -100,7 +100,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	user, err := server.Store.GetUser(ctx, req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid credentials"))) // was StatusNotFound becaume unauthorized as it is subject to vulnerability
+			ctx.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid credentials")))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -113,7 +113,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	newAT, newATID, newRT, newRTID, err := server.TokenMaker.CreateTokenPair(
+	newAT, newATST, newRT, newRTST, err := server.TokenMaker.CreateTokenPair(
 		user.ID,
 		server.Config.AccessTokenDuration,
 		server.Config.RefreshTokenDuration,
@@ -122,25 +122,16 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
 
-	err = server.Cache.SetRefreshToken(ctx, user.ID.String(), newATID, server.Config.RefreshTokenDuration)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	err = server.Cache.SetRefreshToken(ctx, user.ID.String(), newRTID, server.Config.RefreshTokenDuration)
+	err = server.Cache.SetTokenData(ctx, newAT, server.Config.AccessTokenDuration, newRT, server.Config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	rsp := loginUserResponse{
-		AccessToken:  newAT,
-		RefreshToken: newRT,
+		AccessToken:  newATST,
+		RefreshToken: newRTST,
 		User:         newUserResponse(user),
 	}
 	ctx.JSON(http.StatusOK, rsp)
