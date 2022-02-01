@@ -30,22 +30,34 @@ func NewPasetoMaker(symmetricKey string) (Maker, error) {
 }
 
 // CreateToken creates a new token for a specific userID and duration
-func (maker *PasetoMaker) CreateToken(userID uuid.UUID, duration time.Duration) (string, error) {
+func (maker *PasetoMaker) CreateToken(userID uuid.UUID, duration time.Duration) (*Payload, string, error) {
 	payload, err := NewPayload(userID, duration)
 	if err != nil {
-		return "", err
+		return &Payload{}, "", err
 	}
 
-	return maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
+	st, err := maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
+	return payload, st, err
 }
 
-func (maker *PasetoMaker) CreateRefreshToken(userID uuid.UUID, duration time.Duration) (string, string, error) {
-	payload, tokenID, err := NewRefreshPayload(userID, duration)
+// CreateTokenPair creates a new pair of tokens for a specific userID and duration
+func (maker *PasetoMaker) CreateTokenPair(userID uuid.UUID, accessDuration time.Duration, refreshDuration time.Duration) (Payload, string, Payload, string, error) {
+	at, atST, err := maker.CreateToken(
+		userID,
+		accessDuration,
+	)
 	if err != nil {
-		return "", "", err
+		return Payload{}, "", Payload{}, "", err
 	}
-	token, err := maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
-	return token, tokenID, err
+
+	rt, rtST, err := maker.CreateToken(
+		userID,
+		refreshDuration,
+	)
+	if err != nil {
+		return Payload{}, "", Payload{}, "", err
+	}
+	return *at, atST, *rt, rtST, nil
 }
 
 // VerifyToken checks if the token is valid or not
