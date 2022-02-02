@@ -87,7 +87,7 @@ func TestCreateUserAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		body          gin.H
-		buildStubs    func(store *mockdb.MockStore)
+		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache)
 		checkResponse func(recoder *httptest.ResponseRecorder)
 	}{
 		{
@@ -98,7 +98,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"last_name":  user.LastName,
 				"email":      user.Email,
 			},
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				arg := db.CreateUserParams{
 					FirstName: user.FirstName,
 					LastName:  user.LastName,
@@ -122,7 +122,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"last_name":  user.LastName,
 				"email":      user.Email,
 			},
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(1).
@@ -140,7 +140,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"last_name":  user.LastName,
 				"email":      user.Email,
 			},
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(1).
@@ -158,7 +158,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"last_name":  user.LastName,
 				"email":      "invalid-email",
 			},
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -175,7 +175,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"last_name":  user.LastName,
 				"email":      user.Email,
 			},
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -194,9 +194,8 @@ func TestCreateUserAPI(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
-			tc.buildStubs(store)
-
 			cache := mockcache.NewMockCache(ctrl)
+			tc.buildStubs(store, cache)
 
 			server := newTestServer(t, store, cache)
 			recorder := httptest.NewRecorder()

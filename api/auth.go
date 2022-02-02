@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/awakim/immoblock-backend/token"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,7 +16,7 @@ const (
 )
 
 // authMiddleware creates a gin middleware for authorization
-func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
+func auth(tokenMaker token.Maker) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authorizationHeader := ctx.GetHeader(authorizationHeaderKey)
 
@@ -45,11 +44,19 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 	}
 }
 
-func CORS(corsOrigins []string) gin.HandlerFunc {
-	return cors.New(cors.Config{
-		AllowOrigins:     corsOrigins,
-		AllowCredentials: true,
-		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Accept", "Origin", "Cache-Control", "X-Requested-With"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-	})
+func (server *Server) revoked(ctx *gin.Context) {
+
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	b, err := server.Cache.IsRevoked(ctx, *payload)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	if b {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(errors.New("unauthorized")))
+		return
+	}
+	ctx.Set(authorizationPayloadKey, payload)
+	ctx.Next()
 }

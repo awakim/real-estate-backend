@@ -9,12 +9,10 @@ import (
 )
 
 type Cache interface {
-	// SetRefreshToken(ctx context.Context, userID string, tokenID string, expiration time.Duration) error
 	DeleteRefreshToken(ctx context.Context, userID string, tokenID string) error
-	// LPushAccessToken(ctx context.Context, userID string, tokenID string) error
-	// SetTokensInfos(ctx context.Context, userID string, atID string, rtID string) error
 	SetTokenData(ctx context.Context, accessToken token.Payload, atd time.Duration, refreshToken token.Payload, rtd time.Duration) error
-	GetTokenData(ctx context.Context, refreshToken token.Payload) error
+	LogoutUser(ctx context.Context, accessToken token.Payload, refreshToken token.Payload) error
+	IsRevoked(ctx context.Context, token token.Payload) (bool, error)
 }
 
 type RedisStore struct {

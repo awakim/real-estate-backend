@@ -136,3 +136,38 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, rsp)
 }
+
+type logoutRequest struct {
+	AccessToken  string `json:"access_token" binding:"required"`
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+func (server *Server) logoutUser(ctx *gin.Context) {
+	var req logoutRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	accessToken, err := server.TokenMaker.VerifyToken(req.AccessToken)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	refreshToken, err := server.TokenMaker.VerifyToken(req.RefreshToken)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	err = server.Cache.LogoutUser(ctx, *accessToken, *refreshToken)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "user has successfully logged out",
+	})
+}

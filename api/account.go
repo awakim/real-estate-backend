@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 
 	db "github.com/awakim/immoblock-backend/db/sqlc"
@@ -25,7 +24,6 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	}
 
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-	fmt.Println(authPayload)
 	arg := db.CreateAccountParams{
 		Owner:      authPayload.UserID,
 		Balance:    0,
