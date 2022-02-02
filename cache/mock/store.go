@@ -50,18 +50,33 @@ func (mr *MockCacheMockRecorder) DeleteRefreshToken(arg0, arg1, arg2 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshToken", reflect.TypeOf((*MockCache)(nil).DeleteRefreshToken), arg0, arg1, arg2)
 }
 
-// GetTokenData mocks base method.
-func (m *MockCache) GetTokenData(arg0 context.Context, arg1 token.Payload) error {
+// IsRevoked mocks base method.
+func (m *MockCache) IsRevoked(arg0 context.Context, arg1 token.Payload) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTokenData", arg0, arg1)
+	ret := m.ctrl.Call(m, "IsRevoked", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsRevoked indicates an expected call of IsRevoked.
+func (mr *MockCacheMockRecorder) IsRevoked(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRevoked", reflect.TypeOf((*MockCache)(nil).IsRevoked), arg0, arg1)
+}
+
+// LogoutUser mocks base method.
+func (m *MockCache) LogoutUser(arg0 context.Context, arg1, arg2 token.Payload) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LogoutUser", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GetTokenData indicates an expected call of GetTokenData.
-func (mr *MockCacheMockRecorder) GetTokenData(arg0, arg1 interface{}) *gomock.Call {
+// LogoutUser indicates an expected call of LogoutUser.
+func (mr *MockCacheMockRecorder) LogoutUser(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenData", reflect.TypeOf((*MockCache)(nil).GetTokenData), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LogoutUser", reflect.TypeOf((*MockCache)(nil).LogoutUser), arg0, arg1, arg2)
 }
 
 // SetTokenData mocks base method.

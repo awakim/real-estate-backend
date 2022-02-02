@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/awakim/immoblock-backend/token"
+	"github.com/go-redis/redis/v8"
 )
 
 // DeleteRefreshtoken deletes old refresh tokens
@@ -18,7 +19,7 @@ func (cache *RedisStore) DeleteRefreshToken(ctx context.Context, userID string, 
 	}
 
 	if response.Val() < 1 {
-		return fmt.Errorf("invalid Refresh token: %s:%s does not exist", userID, tokenID)
+		return redis.Nil
 	}
 
 	return nil
@@ -32,21 +33,23 @@ func (cache *RedisStore) SetTokenData(ctx context.Context, accessToken token.Pay
 		return errors.New("invalid access token data to set in cache")
 	}
 	at := fmt.Sprintf("at:%s:%s", accessToken.UserID.String(), accessToken.ID.String())
-	pipe.SetEX(ctx, at, 0, atd)
+	pipe.SetEX(ctx, at, 1, atd)
 
 	if refreshToken.UserID.String() == "" || refreshToken.ID.String() == "" {
 		return errors.New("invalid refresh token data to set in cache")
 	}
 	rt := fmt.Sprintf("rt:%s:%s", refreshToken.UserID.String(), refreshToken.ID.String())
-	pipe.SetEX(ctx, rt, 0, rtd)
+	pipe.SetEX(ctx, rt, 1, rtd)
 
 	atlKey := fmt.Sprintf("atl:%s", accessToken.UserID.String())
 	atlValue := []interface{}{accessToken.ID.String()}
 	pipe.LPush(ctx, atlKey, atlValue...)
+	pipe.Expire(ctx, atlKey, atd)
 
 	rtlKey := fmt.Sprintf("rtl:%s", refreshToken.UserID.String())
 	rtlValue := []interface{}{refreshToken.ID.String()}
 	pipe.LPush(ctx, rtlKey, rtlValue...)
+	pipe.Expire(ctx, rtlKey, rtd)
 
 	// allow for maximum 3 tokens simulateously.
 	pipe.LTrim(ctx, atlKey, 0, 2)
@@ -56,15 +59,37 @@ func (cache *RedisStore) SetTokenData(ctx context.Context, accessToken token.Pay
 	return err
 }
 
-func (cache *RedisStore) GetTokenData(ctx context.Context, refreshToken token.Payload) error {
+func (cache *RedisStore) LogoutUser(ctx context.Context, accessToken token.Payload, refreshToken token.Payload) error {
+	pipe := cache.Client.TxPipeline()
+
 	keys := []string{
+		fmt.Sprintf("at:%s:%s", accessToken.UserID.String(), accessToken.ID.String()),
 		fmt.Sprintf("rt:%s:%s", refreshToken.UserID.String(), refreshToken.ID.String()),
-		fmt.Sprintf("rtl:%s", refreshToken.UserID.String()),
 	}
-	resp, err := cache.Client.MGet(ctx, keys...).Result()
-	if err != nil {
-		return err
+	pipe.Del(ctx, keys...)
+
+	// Revoke access and refresh token
+	revokedAccessTokenKey := fmt.Sprintf("rev:%s:%s", accessToken.UserID.String(), accessToken.ID.String())
+	accessExpiry := accessToken.ExpiredAt.Sub(time.Now().UTC()) + time.Minute
+	pipe.SetEX(ctx, revokedAccessTokenKey, 1, accessExpiry)
+
+	_, err := pipe.Exec(ctx)
+	return err
+
+}
+
+func (cache *RedisStore) IsRevoked(ctx context.Context, token token.Payload) (revoked bool, err error) {
+	revoked = true
+	err = nil
+	key := fmt.Sprintf("rev:%s:%s", token.UserID.String(), token.ID.String())
+
+	_, err = cache.Client.Get(ctx, key).Result()
+	if err == redis.Nil {
+		return false, nil
+	} else if err != nil && err != redis.Nil {
+		return false, err
+	} else {
+		return true, nil
 	}
-	fmt.Println(resp...)
-	return nil
+
 }

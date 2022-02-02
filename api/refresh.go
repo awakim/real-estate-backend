@@ -1,9 +1,11 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 )
 
 type refreshRequest struct {
@@ -31,6 +33,10 @@ func (server *Server) refresh(ctx *gin.Context) {
 	prevTokenID := refreshToken.ID.String()
 	if prevTokenID != "" {
 		if err := server.Cache.DeleteRefreshToken(ctx, refreshToken.UserID.String(), prevTokenID); err != nil {
+			if err == redis.Nil {
+				ctx.JSON(http.StatusNotFound, errorResponse(errors.New("refresh not found")))
+				return
+			}
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}

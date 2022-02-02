@@ -37,27 +37,11 @@ func NewPayload(userID uuid.UUID, duration time.Duration) (*Payload, error) {
 	payload := &Payload{
 		ID:        tokenID,
 		UserID:    userID,
-		IssuedAt:  time.Now(),
-		ExpiredAt: time.Now().Add(duration),
+		IssuedAt:  time.Now().UTC(),
+		ExpiredAt: time.Now().UTC().Add(duration),
 	}
 	return payload, nil
 }
-
-// // NewRefreshPayload creates a new token payload with a specific username and duration
-// func NewRefreshPayload(userID uuid.UUID, duration time.Duration) (*Payload, error) {
-// 	tokenID, err := uuid.NewRandom()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	payload := &Payload{
-// 		ID:        tokenID,
-// 		UserID:    userID,
-// 		IssuedAt:  time.Now(),
-// 		ExpiredAt: time.Now().Add(duration),
-// 	}
-// 	return payload, nil
-// }
 
 // Valid checks if the token payload is valid or not
 func (payload *Payload) Valid() error {
