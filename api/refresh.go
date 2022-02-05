@@ -44,6 +44,7 @@ func (server *Server) refresh(ctx *gin.Context) {
 
 	newAT, newATST, newRT, newRTST, err := server.TokenMaker.CreateTokenPair(
 		refreshToken.UserID,
+		refreshToken.IsAdmin,
 		server.Config.AccessTokenDuration,
 		server.Config.RefreshTokenDuration,
 	)

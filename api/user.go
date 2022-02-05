@@ -115,6 +115,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	newAT, newATST, newRT, newRTST, err := server.TokenMaker.CreateTokenPair(
 		user.ID,
+		user.IsAdmin,
 		server.Config.AccessTokenDuration,
 		server.Config.RefreshTokenDuration,
 	)
@@ -137,13 +138,13 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, rsp)
 }
 
-type logoutRequest struct {
+type logoutUserRequest struct {
 	AccessToken  string `json:"access_token" binding:"required"`
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
 func (server *Server) logoutUser(ctx *gin.Context) {
-	var req logoutRequest
+	var req logoutUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

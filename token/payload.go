@@ -19,6 +19,7 @@ type Payload struct {
 	UserID    uuid.UUID `json:"user_id"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
+	IsAdmin   bool      `json:"is_admin"`
 }
 
 // TokenPair contains the token pair returned at login or refresh
@@ -28,7 +29,7 @@ type TokenPair struct {
 }
 
 // NewPayload creates a new token payload with a specific username and duration
-func NewPayload(userID uuid.UUID, duration time.Duration) (*Payload, error) {
+func NewPayload(userID uuid.UUID, isAdmin bool, duration time.Duration) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -39,6 +40,7 @@ func NewPayload(userID uuid.UUID, duration time.Duration) (*Payload, error) {
 		UserID:    userID,
 		IssuedAt:  time.Now().UTC(),
 		ExpiredAt: time.Now().UTC().Add(duration),
+		IsAdmin:   isAdmin,
 	}
 	return payload, nil
 }

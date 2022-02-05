@@ -17,11 +17,9 @@ func (cache *RedisStore) DeleteRefreshToken(ctx context.Context, userID string, 
 	if err := response.Err(); err != nil {
 		return err
 	}
-
 	if response.Val() < 1 {
 		return redis.Nil
 	}
-
 	return nil
 }
 
@@ -59,6 +57,7 @@ func (cache *RedisStore) SetTokenData(ctx context.Context, accessToken token.Pay
 	return err
 }
 
+// LogoutUser deletes access and refresh tokens from Cache and revoke access and refresh tokens by setting them in Cache.
 func (cache *RedisStore) LogoutUser(ctx context.Context, accessToken token.Payload, refreshToken token.Payload) error {
 	pipe := cache.Client.TxPipeline()
 
@@ -70,26 +69,27 @@ func (cache *RedisStore) LogoutUser(ctx context.Context, accessToken token.Paylo
 
 	// Revoke access and refresh token
 	revokedAccessTokenKey := fmt.Sprintf("rev:%s:%s", accessToken.UserID.String(), accessToken.ID.String())
+	revokedRefreshTokenKey := fmt.Sprintf("rev:%s:%s", refreshToken.UserID.String(), refreshToken.ID.String())
 	accessExpiry := accessToken.ExpiredAt.Sub(time.Now().UTC()) + time.Minute
+	refreshExpiry := refreshToken.ExpiredAt.Sub(time.Now().UTC()) + time.Minute
 	pipe.SetEX(ctx, revokedAccessTokenKey, 1, accessExpiry)
+	pipe.SetEX(ctx, revokedRefreshTokenKey, 1, refreshExpiry)
 
 	_, err := pipe.Exec(ctx)
 	return err
-
 }
 
-func (cache *RedisStore) IsRevoked(ctx context.Context, token token.Payload) (revoked bool, err error) {
-	revoked = true
-	err = nil
+// IsRevoked checks whether a token is revoked by checking the according key `rev:{{userID}}:{{tokenID}}`.
+// If the key present, the token is revoked, else perhaps a server error and finally if none of the
+// previous then token is not revoked.
+func (cache *RedisStore) IsRevoked(ctx context.Context, token token.Payload) (bool, error) {
 	key := fmt.Sprintf("rev:%s:%s", token.UserID.String(), token.ID.String())
-
-	_, err = cache.Client.Get(ctx, key).Result()
+	_, err := cache.Client.Get(ctx, key).Result()
 	if err == redis.Nil {
 		return false, nil
 	} else if err != nil && err != redis.Nil {
-		return false, err
+		return true, err
 	} else {
 		return true, nil
 	}
-
 }

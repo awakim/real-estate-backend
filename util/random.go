@@ -5,11 +5,13 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const (
 	numbers  = "1234567890"
-	alphabet = "abcdefghijklmnopqrstuvwxyz"
+	alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
 
 func init() {
@@ -47,9 +49,10 @@ func RandomPhone() string {
 	return sb.String()
 }
 
-// RandomOwner generates a random owner name
-func RandomOwner() string {
-	return RandomString(6)
+// RandomUserID generates a random userID name
+func RandomUserID() uuid.UUID {
+	uid, _ := uuid.NewRandom()
+	return uid
 }
 
 // RandomMoney generates a random amount of money
