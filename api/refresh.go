@@ -30,11 +30,21 @@ func (server *Server) refresh(ctx *gin.Context) {
 		return
 	}
 
+	revoked, err := server.Cache.IsRevoked(ctx, *refreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	if revoked {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(errors.New("user has been signed out")))
+		return
+	}
+
 	prevTokenID := refreshToken.ID.String()
 	if prevTokenID != "" {
 		if err := server.Cache.DeleteRefreshToken(ctx, refreshToken.UserID.String(), prevTokenID); err != nil {
 			if err == redis.Nil {
-				ctx.JSON(http.StatusNotFound, errorResponse(errors.New("refresh not found")))
+				ctx.JSON(http.StatusNotFound, errorResponse(errors.New("unable to refresh access")))
 				return
 			}
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
