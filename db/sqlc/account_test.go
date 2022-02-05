@@ -15,7 +15,7 @@ func createRandomAccount(t *testing.T) Account {
 	property := createRandomProperty(t)
 
 	arg := CreateAccountParams{
-		Owner:      user.ID,
+		UserID:     user.ID,
 		Balance:    util.RandomMoney(),
 		PropertyID: property.ID,
 	}
@@ -24,7 +24,7 @@ func createRandomAccount(t *testing.T) Account {
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 
-	require.Equal(t, arg.Owner, account.Owner)
+	require.Equal(t, arg.UserID, account.UserID)
 	require.Equal(t, arg.Balance, account.Balance)
 	require.Equal(t, arg.PropertyID, account.PropertyID)
 
@@ -45,7 +45,7 @@ func TestGetAccount(t *testing.T) {
 	require.NotEmpty(t, account2)
 
 	require.Equal(t, account1.ID, account2.ID)
-	require.Equal(t, account1.Owner, account2.Owner)
+	require.Equal(t, account1.UserID, account2.UserID)
 	require.Equal(t, account1.Balance, account2.Balance)
 	require.Equal(t, account1.PropertyID, account2.PropertyID)
 	require.WithinDuration(t, account1.CreatedAt, account2.CreatedAt, time.Second)
@@ -64,7 +64,7 @@ func TestUpdateAccount(t *testing.T) {
 	require.NotEmpty(t, account2)
 
 	require.Equal(t, account1.ID, account2.ID)
-	require.Equal(t, account1.Owner, account2.Owner)
+	require.Equal(t, account1.UserID, account2.UserID)
 	require.Equal(t, arg.Balance, account2.Balance)
 	require.Equal(t, account1.PropertyID, account2.PropertyID)
 	require.WithinDuration(t, account1.CreatedAt, account2.CreatedAt, time.Second)
@@ -88,7 +88,7 @@ func TestListAccounts(t *testing.T) {
 	}
 
 	arg := ListAccountsParams{
-		Owner:  lastAccount.Owner,
+		UserID: lastAccount.UserID,
 		Limit:  5,
 		Offset: 0,
 	}
@@ -99,6 +99,6 @@ func TestListAccounts(t *testing.T) {
 
 	for _, account := range accounts {
 		require.NotEmpty(t, account)
-		require.Equal(t, lastAccount.Owner, account.Owner)
+		require.Equal(t, lastAccount.UserID, account.UserID)
 	}
 }

@@ -9,7 +9,7 @@ CREATE TABLE "users" (
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-ALTER TABLE "accounts" ADD FOREIGN KEY ("owner") REFERENCES "users" ("id");
+ALTER TABLE "accounts" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 
--- CREATE UNIQUE INDEX ON "accounts" ("owner", "property_id");
-ALTER TABLE "accounts" ADD CONSTRAINT "owner_property_id_key" UNIQUE ("owner","property_id");
+-- CREATE UNIQUE INDEX ON "accounts" ("user_id", "property_id");
+ALTER TABLE "accounts" ADD CONSTRAINT "user_id_property_id_key" UNIQUE ("user_id","property_id");

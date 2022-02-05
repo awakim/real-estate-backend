@@ -30,8 +30,8 @@ func NewPasetoMaker(symmetricKey string) (Maker, error) {
 }
 
 // CreateToken creates a new token for a specific userID and duration
-func (maker *PasetoMaker) CreateToken(userID uuid.UUID, duration time.Duration) (*Payload, string, error) {
-	payload, err := NewPayload(userID, duration)
+func (maker *PasetoMaker) CreateToken(userID uuid.UUID, isAdmin bool, duration time.Duration) (*Payload, string, error) {
+	payload, err := NewPayload(userID, isAdmin, duration)
 	if err != nil {
 		return &Payload{}, "", err
 	}
@@ -41,9 +41,10 @@ func (maker *PasetoMaker) CreateToken(userID uuid.UUID, duration time.Duration) 
 }
 
 // CreateTokenPair creates a new pair of tokens for a specific userID and duration
-func (maker *PasetoMaker) CreateTokenPair(userID uuid.UUID, accessDuration time.Duration, refreshDuration time.Duration) (Payload, string, Payload, string, error) {
+func (maker *PasetoMaker) CreateTokenPair(userID uuid.UUID, isAdmin bool, accessDuration time.Duration, refreshDuration time.Duration) (Payload, string, Payload, string, error) {
 	at, atST, err := maker.CreateToken(
 		userID,
+		isAdmin,
 		accessDuration,
 	)
 	if err != nil {
@@ -52,6 +53,7 @@ func (maker *PasetoMaker) CreateTokenPair(userID uuid.UUID, accessDuration time.
 
 	rt, rtST, err := maker.CreateToken(
 		userID,
+		isAdmin,
 		refreshDuration,
 	)
 	if err != nil {

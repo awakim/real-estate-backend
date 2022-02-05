@@ -14,8 +14,8 @@ func TestSetTokenData(t *testing.T) {
 	uid1, _ := uuid.NewRandom()
 	uid2, _ := uuid.NewRandom()
 
-	at, _ := token.NewPayload(uid1, time.Minute)
-	rt, _ := token.NewPayload(uid2, time.Minute)
+	at, _ := token.NewPayload(uid1, false, time.Minute)
+	rt, _ := token.NewPayload(uid2, false, time.Minute)
 
 	noErrorCase := struct {
 		accessToken  *token.Payload
@@ -33,8 +33,8 @@ func TestDeleteRefreshToken(t *testing.T) {
 	uid1, _ := uuid.NewRandom()
 	uid2, _ := uuid.NewRandom()
 
-	at, _ := token.NewPayload(uid1, time.Minute)
-	rt, _ := token.NewPayload(uid2, time.Minute)
+	at, _ := token.NewPayload(uid1, false, time.Minute)
+	rt, _ := token.NewPayload(uid2, false, time.Minute)
 
 	noErrorCase := struct {
 		accessToken  *token.Payload

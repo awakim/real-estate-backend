@@ -9,9 +9,15 @@ import (
 )
 
 type Cache interface {
+	// DeleteRefreshtoken deletes old refresh tokens
 	DeleteRefreshToken(ctx context.Context, userID string, tokenID string) error
+	// SetTokenData sets the access and refresh tokens related data into Redis cache.
 	SetTokenData(ctx context.Context, accessToken token.Payload, atd time.Duration, refreshToken token.Payload, rtd time.Duration) error
+	// LogoutUser deletes access and refresh tokens from Cache and revoke access and refresh tokens by setting them in Cache.
 	LogoutUser(ctx context.Context, accessToken token.Payload, refreshToken token.Payload) error
+	// IsRevoked checkes whether a token is revoked by checking the according key `rev:{{userID}}:{{tokenID}}`.
+	// If the key present, the token is revoked, else perhaps a server error and finally if none of the
+	// previous then token is not revoked.
 	IsRevoked(ctx context.Context, token token.Payload) (bool, error)
 }
 

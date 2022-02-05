@@ -11,7 +11,7 @@ import (
 
 type Account struct {
 	ID         int64     `json:"id"`
-	Owner      uuid.UUID `json:"owner"`
+	UserID     uuid.UUID `json:"user_id"`
 	Balance    int64     `json:"balance"`
 	PropertyID int64     `json:"property_id"`
 	CreatedAt  time.Time `json:"created_at"`
@@ -55,4 +55,5 @@ type User struct {
 	PhoneNumber       sql.NullString `json:"phone_number"`
 	PasswordChangedAt time.Time      `json:"password_changed_at"`
 	CreatedAt         time.Time      `json:"created_at"`
+	IsAdmin           bool           `json:"is_admin"`
 }

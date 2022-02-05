@@ -39,7 +39,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "OK",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -60,7 +60,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "UnauthorizedUser",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, unauthorizedUserID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, unauthorizedUserID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -96,7 +96,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "NotFound",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -116,7 +116,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "InternalError",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -136,7 +136,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "InvalidID",
 			accountID: 0,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -190,15 +190,15 @@ func TestCreateAccountAPI(t *testing.T) {
 		{
 			name: "OK",
 			body: gin.H{
-				"owner":       account.Owner,
+				"user_id":     account.UserID,
 				"property_id": account.PropertyID,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				arg := db.CreateAccountParams{
-					Owner:      account.Owner,
+					UserID:     account.UserID,
 					PropertyID: account.PropertyID,
 					Balance:    0,
 				}
@@ -221,11 +221,11 @@ func TestCreateAccountAPI(t *testing.T) {
 		{
 			name: "InternalError",
 			body: gin.H{
-				"owner":       account.Owner,
+				"user_id":     account.UserID,
 				"property_id": account.PropertyID,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Times(1).Return(db.Account{}, sql.ErrConnDone)
@@ -238,11 +238,11 @@ func TestCreateAccountAPI(t *testing.T) {
 		{
 			name: "InvalidPropertyID",
 			body: gin.H{
-				"owner":       account.Owner,
+				"user_id":     account.UserID,
 				"property_id": "invalid",
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -316,11 +316,11 @@ func TestListAccountsAPI(t *testing.T) {
 				pageSize: n,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				arg := db.ListAccountsParams{
-					Owner:  accounts[n-1].Owner,
+					UserID: accounts[n-1].UserID,
 					Limit:  int32(n),
 					Offset: 0,
 				}
@@ -346,7 +346,7 @@ func TestListAccountsAPI(t *testing.T) {
 				pageSize: n,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -369,7 +369,7 @@ func TestListAccountsAPI(t *testing.T) {
 				pageSize: n,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -391,7 +391,7 @@ func TestListAccountsAPI(t *testing.T) {
 				pageSize: 100000,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -439,10 +439,10 @@ func TestListAccountsAPI(t *testing.T) {
 	}
 }
 
-func randomAccount(owner uuid.UUID) db.Account {
+func randomAccount(userID uuid.UUID) db.Account {
 	return db.Account{
 		ID:         util.RandomInt(1, 1000),
-		Owner:      owner,
+		UserID:     userID,
 		Balance:    util.RandomMoney(),
 		PropertyID: util.RandomPropertyID(),
 	}

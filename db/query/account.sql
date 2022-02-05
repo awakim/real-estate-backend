@@ -1,6 +1,6 @@
 -- name: CreateAccount :one
 INSERT INTO accounts (
-  owner,
+  user_id,
   balance,
   property_id
 ) VALUES (
@@ -18,7 +18,7 @@ FOR NO KEY UPDATE;
 
 -- name: ListAccounts :many
 SELECT * FROM accounts
-WHERE owner = $1
+WHERE user_id = $1
 ORDER BY id
 LIMIT $2
 OFFSET $3;
