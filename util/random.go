@@ -74,3 +74,17 @@ func RandomEmail() string {
 func RandomPhoneNumber() string {
 	return fmt.Sprintf("+336%s", RandomPhone())
 }
+
+type Gender string
+
+const (
+	GenderF Gender = "F"
+	GenderM Gender = "M"
+)
+
+// RandomGender generates a random email
+func RandomGender() Gender {
+	genders := []Gender{GenderF, GenderM}
+	k := len(genders)
+	return genders[rand.Intn(k)]
+}

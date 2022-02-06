@@ -8,6 +8,7 @@ import (
 
 	db "github.com/awakim/immoblock-backend/db/sqlc"
 	"github.com/awakim/immoblock-backend/util"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 
@@ -44,7 +45,12 @@ func newUserResponse(user db.User) userResponse {
 func (server *Server) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		var verr validator.ValidationErrors
+		if errors.As(err, &verr) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"errors": ValidationError(verr)})
+			return
+		}
+		ctx.JSON(http.StatusBadRequest, gin.H{"errors": errorResponse(err)})
 		return
 	}
 
@@ -93,7 +99,12 @@ type loginUserResponse struct {
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		var verr validator.ValidationErrors
+		if errors.As(err, &verr) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"errors": ValidationError(verr)})
+			return
+		}
+		ctx.JSON(http.StatusBadRequest, gin.H{"errors": errorResponse(err)})
 		return
 	}
 
@@ -146,7 +157,12 @@ type logoutUserRequest struct {
 func (server *Server) logoutUser(ctx *gin.Context) {
 	var req logoutUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		var verr validator.ValidationErrors
+		if errors.As(err, &verr) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"errors": ValidationError(verr)})
+			return
+		}
+		ctx.JSON(http.StatusBadRequest, gin.H{"errors": errorResponse(err)})
 		return
 	}
 

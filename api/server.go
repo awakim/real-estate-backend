@@ -2,12 +2,16 @@ package api
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
 
 	cache "github.com/awakim/immoblock-backend/cache/redis"
 	"github.com/awakim/immoblock-backend/config"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
 	"github.com/awakim/immoblock-backend/token"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 // Server serves HTTP requests for our banking service.
@@ -33,6 +37,17 @@ func NewServer(config config.Config, store db.Store, cache cache.Cache) (*Server
 		TokenMaker: tokenMaker,
 	}
 
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("gender", validGender)
+		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+			if name == "-" {
+				return ""
+			}
+			return name
+		})
+	}
+
 	server.setupRouter()
 	return server, nil
 }
@@ -54,6 +69,7 @@ func (server *Server) setupRouter() {
 
 	authRoutes.POST("/transfers", server.createTransfer)
 
+	authRoutes.POST("/users/info", server.createUserInfo)
 	authRoutes.POST("/users/logout", server.logoutUser)
 
 	server.Router = router

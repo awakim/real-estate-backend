@@ -190,7 +190,6 @@ func TestCreateAccountAPI(t *testing.T) {
 		{
 			name: "OK",
 			body: gin.H{
-				"user_id":     account.UserID,
 				"property_id": account.PropertyID,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
@@ -221,7 +220,6 @@ func TestCreateAccountAPI(t *testing.T) {
 		{
 			name: "InternalError",
 			body: gin.H{
-				"user_id":     account.UserID,
 				"property_id": account.PropertyID,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
@@ -238,20 +236,14 @@ func TestCreateAccountAPI(t *testing.T) {
 		{
 			name: "InvalidPropertyID",
 			body: gin.H{
-				"user_id":     account.UserID,
 				"property_id": "invalid",
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
-				store.EXPECT().
-					CreateAccount(gomock.Any(), gomock.Any()).
-					Times(0)
-				cache.EXPECT().
-					IsRevoked(gomock.Any(), gomock.Any()).
-					Times(1).
-					Return(false, nil)
+				cache.EXPECT().IsRevoked(gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
+				store.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)

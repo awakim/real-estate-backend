@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -20,7 +21,12 @@ type refreshResponse struct {
 func (server *Server) refresh(ctx *gin.Context) {
 	var req refreshRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		var verr validator.ValidationErrors
+		if errors.As(err, &verr) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"errors": ValidationError(verr)})
+			return
+		}
+		ctx.JSON(http.StatusBadRequest, gin.H{"errors": errorResponse(err)})
 		return
 	}
 

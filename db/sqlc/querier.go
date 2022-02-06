@@ -4,6 +4,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -13,6 +15,7 @@ type Querier interface {
 	CreateProperty(ctx context.Context, arg CreatePropertyParams) (Property, error)
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateUserInfo(ctx context.Context, arg CreateUserInfoParams) (UserInformation, error)
 	DeleteAccount(ctx context.Context, id int64) error
 	GetAccount(ctx context.Context, id int64) (Account, error)
 	GetAccountForUpdate(ctx context.Context, id int64) (Account, error)
@@ -20,6 +23,7 @@ type Querier interface {
 	GetProperty(ctx context.Context, id int64) (Property, error)
 	GetTransfer(ctx context.Context, id int64) (Transfer, error)
 	GetUser(ctx context.Context, email string) (User, error)
+	GetUserInfo(ctx context.Context, userID uuid.UUID) (UserInformation, error)
 	ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error)
 	ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error)
 	ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error)
