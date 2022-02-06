@@ -38,7 +38,6 @@ func (cache *RedisStore) SetTokenData(ctx context.Context, accessToken token.Pay
 	}
 	rt := fmt.Sprintf("rt:%s:%s", refreshToken.UserID.String(), refreshToken.ID.String())
 	pipe.SetEX(ctx, rt, 1, rtd)
-
 	atlKey := fmt.Sprintf("atl:%s", accessToken.UserID.String())
 	atlValue := []interface{}{accessToken.ID.String()}
 	pipe.LPush(ctx, atlKey, atlValue...)

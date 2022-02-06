@@ -10,6 +10,7 @@ import (
 
 	db "github.com/awakim/immoblock-backend/db/sqlc"
 	gomock "github.com/golang/mock/gomock"
+	uuid "github.com/google/uuid"
 )
 
 // MockStore is a mock of Store interface.
@@ -125,6 +126,21 @@ func (mr *MockStoreMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockStore)(nil).CreateUser), arg0, arg1)
 }
 
+// CreateUserInfo mocks base method.
+func (m *MockStore) CreateUserInfo(arg0 context.Context, arg1 db.CreateUserInfoParams) (db.UserInformation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUserInfo", arg0, arg1)
+	ret0, _ := ret[0].(db.UserInformation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUserInfo indicates an expected call of CreateUserInfo.
+func (mr *MockStoreMockRecorder) CreateUserInfo(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserInfo", reflect.TypeOf((*MockStore)(nil).CreateUserInfo), arg0, arg1)
+}
+
 // DeleteAccount mocks base method.
 func (m *MockStore) DeleteAccount(arg0 context.Context, arg1 int64) error {
 	m.ctrl.T.Helper()
@@ -227,6 +243,21 @@ func (m *MockStore) GetUser(arg0 context.Context, arg1 string) (db.User, error) 
 func (mr *MockStoreMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockStore)(nil).GetUser), arg0, arg1)
+}
+
+// GetUserInfo mocks base method.
+func (m *MockStore) GetUserInfo(arg0 context.Context, arg1 uuid.UUID) (db.UserInformation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserInfo", arg0, arg1)
+	ret0, _ := ret[0].(db.UserInformation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserInfo indicates an expected call of GetUserInfo.
+func (mr *MockStoreMockRecorder) GetUserInfo(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserInfo", reflect.TypeOf((*MockStore)(nil).GetUserInfo), arg0, arg1)
 }
 
 // ListAccounts mocks base method.

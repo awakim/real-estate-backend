@@ -9,6 +9,7 @@ import (
 	db "github.com/awakim/immoblock-backend/db/sqlc"
 	"github.com/awakim/immoblock-backend/token"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type transferRequest struct {
@@ -21,7 +22,12 @@ type transferRequest struct {
 func (server *Server) createTransfer(ctx *gin.Context) {
 	var req transferRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		var verr validator.ValidationErrors
+		if errors.As(err, &verr) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"errors": ValidationError(verr)})
+			return
+		}
+		ctx.JSON(http.StatusBadRequest, gin.H{"errors": errorResponse(err)})
 		return
 	}
 
