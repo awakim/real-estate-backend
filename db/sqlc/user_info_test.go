@@ -17,7 +17,6 @@ func createRandomUserInfo(t *testing.T) UserInformation {
 		Lastname:    util.RandomString(6),
 		PhoneNumber: util.RandomPhoneNumber(),
 		Nationality: util.RandomString(6),
-		Gender:      "F",
 		Address:     util.RandomString(16),
 		PostalCode:  util.RandomString(6),
 		City:        util.RandomString(6),
@@ -33,7 +32,6 @@ func createRandomUserInfo(t *testing.T) UserInformation {
 	require.Equal(t, arg.Lastname, userInfo.Lastname)
 	require.Equal(t, arg.PhoneNumber, userInfo.PhoneNumber)
 	require.Equal(t, arg.Nationality, userInfo.Nationality)
-	require.Equal(t, arg.Gender, userInfo.Gender)
 	require.Equal(t, arg.Address, userInfo.Address)
 	require.Equal(t, arg.PostalCode, userInfo.PostalCode)
 	require.Equal(t, arg.City, userInfo.City)
@@ -57,7 +55,6 @@ func TestGetUserInfo(t *testing.T) {
 	require.Equal(t, userInfo2.Lastname, userInfo.Lastname)
 	require.Equal(t, userInfo2.PhoneNumber, userInfo.PhoneNumber)
 	require.Equal(t, userInfo2.Nationality, userInfo.Nationality)
-	require.Equal(t, userInfo2.Gender, userInfo.Gender)
 	require.Equal(t, userInfo2.Address, userInfo.Address)
 	require.Equal(t, userInfo2.PostalCode, userInfo.PostalCode)
 	require.Equal(t, userInfo2.City, userInfo.City)

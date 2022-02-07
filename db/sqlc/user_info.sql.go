@@ -16,25 +16,23 @@ INSERT INTO user_information (
   lastname,
   phone_number,
   nationality,
-  gender,
   address,
   postal_code,
   city,
   country
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+  $1, $2, $3, $4, $5, $6, $7, $8, $9
 ) ON CONFLICT (user_id) DO UPDATE
   SET 
   firstname = excluded.firstname,
   lastname = excluded.lastname,
   phone_number = excluded.phone_number,
   nationality = excluded.nationality,
-  gender = excluded.gender,
   address = excluded.address,
   postal_code = excluded.postal_code,
   city = excluded.city,
   country = excluded.country 
-RETURNING user_id, firstname, lastname, phone_number, nationality, gender, address, postal_code, city, country
+RETURNING user_id, firstname, lastname, phone_number, nationality, address, postal_code, city, country
 `
 
 type CreateUserInfoParams struct {
@@ -43,7 +41,6 @@ type CreateUserInfoParams struct {
 	Lastname    string    `json:"lastname"`
 	PhoneNumber string    `json:"phone_number"`
 	Nationality string    `json:"nationality"`
-	Gender      Gender    `json:"gender"`
 	Address     string    `json:"address"`
 	PostalCode  string    `json:"postal_code"`
 	City        string    `json:"city"`
@@ -57,7 +54,6 @@ func (q *Queries) CreateUserInfo(ctx context.Context, arg CreateUserInfoParams) 
 		arg.Lastname,
 		arg.PhoneNumber,
 		arg.Nationality,
-		arg.Gender,
 		arg.Address,
 		arg.PostalCode,
 		arg.City,
@@ -70,7 +66,6 @@ func (q *Queries) CreateUserInfo(ctx context.Context, arg CreateUserInfoParams) 
 		&i.Lastname,
 		&i.PhoneNumber,
 		&i.Nationality,
-		&i.Gender,
 		&i.Address,
 		&i.PostalCode,
 		&i.City,
@@ -80,7 +75,7 @@ func (q *Queries) CreateUserInfo(ctx context.Context, arg CreateUserInfoParams) 
 }
 
 const getUserInfo = `-- name: GetUserInfo :one
-SELECT user_id, firstname, lastname, phone_number, nationality, gender, address, postal_code, city, country FROM user_information
+SELECT user_id, firstname, lastname, phone_number, nationality, address, postal_code, city, country FROM user_information
 WHERE user_id = $1 LIMIT 1
 `
 
@@ -93,7 +88,6 @@ func (q *Queries) GetUserInfo(ctx context.Context, userID uuid.UUID) (UserInform
 		&i.Lastname,
 		&i.PhoneNumber,
 		&i.Nationality,
-		&i.Gender,
 		&i.Address,
 		&i.PostalCode,
 		&i.City,

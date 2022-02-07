@@ -15,10 +15,14 @@ type Cache interface {
 	SetTokenData(ctx context.Context, accessToken token.Payload, atd time.Duration, refreshToken token.Payload, rtd time.Duration) error
 	// LogoutUser deletes access and refresh tokens from Cache and revoke access and refresh tokens by setting them in Cache.
 	LogoutUser(ctx context.Context, accessToken token.Payload, refreshToken token.Payload) error
-	// IsRevoked checkes whether a token is revoked by checking the according key `rev:{{userID}}:{{tokenID}}`.
+	// IsRevoked checks whether a token is revoked by checking the according key `rev:{{userID}}:{{tokenID}}`.
 	// If the key present, the token is revoked, else perhaps a server error and finally if none of the
 	// previous then token is not revoked.
 	IsRevoked(ctx context.Context, token token.Payload) (bool, error)
+	// IsRateLimited checks whether a user has surpassed the limit of login or refresh routes.
+	// The rate limit is imposed as 3 requests per IP per Identifier (Email for login or UserID for refresh)
+	// per quarter hour.
+	IsRateLimited(ctx context.Context, identifier string) (bool, error)
 }
 
 type RedisStore struct {

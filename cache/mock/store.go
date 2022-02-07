@@ -50,6 +50,21 @@ func (mr *MockCacheMockRecorder) DeleteRefreshToken(arg0, arg1, arg2 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshToken", reflect.TypeOf((*MockCache)(nil).DeleteRefreshToken), arg0, arg1, arg2)
 }
 
+// IsRateLimited mocks base method.
+func (m *MockCache) IsRateLimited(arg0 context.Context, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsRateLimited", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsRateLimited indicates an expected call of IsRateLimited.
+func (mr *MockCacheMockRecorder) IsRateLimited(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRateLimited", reflect.TypeOf((*MockCache)(nil).IsRateLimited), arg0, arg1)
+}
+
 // IsRevoked mocks base method.
 func (m *MockCache) IsRevoked(arg0 context.Context, arg1 token.Payload) (bool, error) {
 	m.ctrl.T.Helper()

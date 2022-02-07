@@ -1,12 +1,9 @@
-CREATE TYPE gender AS ENUM ('F', 'M');
-
 CREATE TABLE "user_information" (
   "user_id" uuid PRIMARY KEY,
   "firstname" varchar NOT NULL,
   "lastname" varchar NOT NULL,
   "phone_number" varchar UNIQUE NOT NULL,
   "nationality" varchar NOT NULL,
-  "gender" gender NOT NULL,
   "address" varchar NOT NULL,
   "postal_code" varchar NOT NULL,
   "city" varchar NOT NULL,

@@ -92,3 +92,29 @@ func (cache *RedisStore) IsRevoked(ctx context.Context, token token.Payload) (bo
 		return true, nil
 	}
 }
+
+// IsRateLimited checks whether a user has surpassed the limit of login or refresh routes.
+// The rate limit is imposed as 3 requests per IP and Identifier (Email for login or UserID for refresh)
+// per quarter hour.
+func (cache *RedisStore) IsRateLimited(ctx context.Context, identifier string) (bool, error) {
+	rateLimited := false
+	_, minutes, _ := time.Now().Clock()
+	hourBucket := minutes / 15
+	key := fmt.Sprintf("rate:%s:%v", identifier, hourBucket)
+	val, err := cache.Client.Get(ctx, key).Int()
+	if err != nil && err != redis.Nil {
+		return false, err
+	} else if err == redis.Nil {
+		rateLimited = false
+	} else {
+		if val >= 3 {
+			return true, nil
+		}
+	}
+	pipe := cache.Client.TxPipeline()
+	pipe.Incr(ctx, key)
+	pipe.Expire(ctx, key, 15*time.Minute)
+	_, err = pipe.Exec(ctx)
+
+	return rateLimited, err
+}

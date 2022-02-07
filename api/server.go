@@ -38,7 +38,6 @@ func NewServer(config config.Config, store db.Store, cache cache.Cache) (*Server
 	}
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation("gender", validGender)
 		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
 			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
 			if name == "-" {
@@ -58,7 +57,7 @@ func (server *Server) setupRouter() {
 	router.Use(CORS(server.Config.CorsOrigins))
 
 	router.POST("/users", server.createUser)
-	router.POST("/users/login", server.loginUser)
+	router.POST("/users/login", server.loginRateLimiter, server.loginUser)
 	router.POST("/users/refresh", server.refresh)
 
 	authRoutes := router.Group("/").Use(auth(server.TokenMaker), server.revoked)
