@@ -15,15 +15,14 @@ import (
 )
 
 type createUserInfoRequest struct {
-	Firstname   string    `json:"firstname" binding:"required,alpha"`
-	Lastname    string    `json:"lastname" binding:"required,alpha"`
-	PhoneNumber string    `json:"phone_number" binding:"required,e164"`
-	Nationality string    `json:"nationality" binding:"required,alpha"`
-	Gender      db.Gender `json:"gender" binding:"required,gender"`
-	Address     string    `json:"address" binding:"required,ascii"`
-	PostalCode  string    `json:"postal_code" binding:"required,alphanum"`
-	City        string    `json:"city" binding:"required,alpha"`
-	Country     string    `json:"country" binding:"required,alpha"`
+	Firstname   string `json:"firstname" binding:"required,alpha"`
+	Lastname    string `json:"lastname" binding:"required,alpha"`
+	PhoneNumber string `json:"phone_number" binding:"required,e164"`
+	Nationality string `json:"nationality" binding:"required,alpha"`
+	Address     string `json:"address" binding:"required,ascii"`
+	PostalCode  string `json:"postal_code" binding:"required,alphanum"`
+	City        string `json:"city" binding:"required,alpha"`
+	Country     string `json:"country" binding:"required,alpha"`
 }
 
 type userInfoResponse struct {
@@ -32,7 +31,6 @@ type userInfoResponse struct {
 	Lastname    string    `json:"lastname"`
 	PhoneNumber string    `json:"phone_number"`
 	Nationality string    `json:"nationality"`
-	Gender      db.Gender `json:"gender"`
 	Address     string    `json:"address"`
 	PostalCode  string    `json:"postal_code"`
 	City        string    `json:"city"`
@@ -46,7 +44,6 @@ func newUserInfoResponse(userInfo db.UserInformation) userInfoResponse {
 		Lastname:    userInfo.Lastname,
 		PhoneNumber: userInfo.PhoneNumber,
 		Nationality: userInfo.Nationality,
-		Gender:      userInfo.Gender,
 		Address:     userInfo.Address,
 		PostalCode:  userInfo.PostalCode,
 		City:        userInfo.City,
@@ -74,7 +71,6 @@ func (server *Server) createUserInfo(ctx *gin.Context) {
 		Lastname:    req.Lastname,
 		PhoneNumber: req.PhoneNumber,
 		Nationality: req.Nationality,
-		Gender:      req.Gender,
 		Address:     req.Address,
 		PostalCode:  req.PostalCode,
 		City:        req.City,

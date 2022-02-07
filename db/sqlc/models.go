@@ -4,30 +4,10 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
-
-type Gender string
-
-const (
-	GenderF Gender = "F"
-	GenderM Gender = "M"
-)
-
-func (e *Gender) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = Gender(s)
-	case string:
-		*e = Gender(s)
-	default:
-		return fmt.Errorf("unsupported scan type for Gender: %T", src)
-	}
-	return nil
-}
 
 type Account struct {
 	ID         int64     `json:"id"`
@@ -70,8 +50,7 @@ type User struct {
 	ID                uuid.UUID      `json:"id"`
 	Email             string         `json:"email"`
 	HashedPassword    string         `json:"hashed_password"`
-	FirstName         string         `json:"first_name"`
-	LastName          string         `json:"last_name"`
+	Nickname          string         `json:"nickname"`
 	PhoneNumber       sql.NullString `json:"phone_number"`
 	PasswordChangedAt time.Time      `json:"password_changed_at"`
 	CreatedAt         time.Time      `json:"created_at"`
@@ -85,7 +64,6 @@ type UserInformation struct {
 	// has to be E164 compliant
 	PhoneNumber string `json:"phone_number"`
 	Nationality string `json:"nationality"`
-	Gender      Gender `json:"gender"`
 	Address     string `json:"address"`
 	PostalCode  string `json:"postal_code"`
 	City        string `json:"city"`

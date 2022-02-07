@@ -60,8 +60,7 @@ func randomUser(t *testing.T) (user db.User, password string) {
 	user = db.User{
 		ID:             uid,
 		HashedPassword: hashedPassword,
-		FirstName:      util.RandomString(6),
-		LastName:       util.RandomString(6),
+		Nickname:       util.RandomString(6),
 		Email:          util.RandomEmail(),
 	}
 	return
@@ -75,8 +74,7 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
 	err = json.Unmarshal(data, &gotUser)
 
 	require.NoError(t, err)
-	require.Equal(t, user.FirstName, gotUser.FirstName)
-	require.Equal(t, user.LastName, gotUser.LastName)
+	require.Equal(t, user.Nickname, gotUser.Nickname)
 	require.Equal(t, user.Email, gotUser.Email)
 	require.Empty(t, gotUser.HashedPassword)
 }
@@ -93,16 +91,14 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "OK",
 			body: gin.H{
-				"password":   password,
-				"first_name": user.FirstName,
-				"last_name":  user.LastName,
-				"email":      user.Email,
+				"password": password,
+				"nickname": user.Nickname,
+				"email":    user.Email,
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				arg := db.CreateUserParams{
-					FirstName: user.FirstName,
-					LastName:  user.LastName,
-					Email:     user.Email,
+					Nickname: user.Nickname,
+					Email:    user.Email,
 				}
 				store.EXPECT().
 					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
@@ -117,10 +113,9 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "InternalError",
 			body: gin.H{
-				"password":   password,
-				"first_name": user.FirstName,
-				"last_name":  user.LastName,
-				"email":      user.Email,
+				"password": password,
+				"nickname": user.Nickname,
+				"email":    user.Email,
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -135,10 +130,9 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "DuplicateUsername",
 			body: gin.H{
-				"password":   password,
-				"first_name": user.FirstName,
-				"last_name":  user.LastName,
-				"email":      user.Email,
+				"password": password,
+				"nickname": user.Nickname,
+				"email":    user.Email,
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -153,10 +147,9 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "InvalidEmail",
 			body: gin.H{
-				"password":   password,
-				"first_name": user.FirstName,
-				"last_name":  user.LastName,
-				"email":      "invalid-email",
+				"password": password,
+				"nickname": user.Nickname,
+				"email":    "invalid-email",
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
@@ -170,10 +163,9 @@ func TestCreateUserAPI(t *testing.T) {
 		{
 			name: "TooShortPassword",
 			body: gin.H{
-				"password":   "123",
-				"first_name": user.FirstName,
-				"last_name":  user.LastName,
-				"email":      user.Email,
+				"password": "123",
+				"nickname": user.Nickname,
+				"email":    user.Email,
 			},
 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
 				store.EXPECT().
