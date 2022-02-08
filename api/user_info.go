@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	db "github.com/awakim/immoblock-backend/db/sqlc"
@@ -80,11 +79,14 @@ func (server *Server) createUserInfo(ctx *gin.Context) {
 	userInfo, err := server.Store.CreateUserInfo(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				fmt.Println(req)
-				errPhoneAlreadyExists := errors.New("this phone number already exists")
-				ctx.JSON(http.StatusForbidden, errorResponse(errPhoneAlreadyExists))
+			switch pqErr.Constraint {
+			case "user_information_pkey":
+				errUserIDAlreadyExists := errors.New("user information already exists: cannot be modified")
+				ctx.JSON(http.StatusForbidden, errorResponse(errUserIDAlreadyExists))
+				return
+			case "user_information_phone_number_key":
+				errPhoneNumberExists := errors.New("user information phone number exists: cannot be modified")
+				ctx.JSON(http.StatusForbidden, errorResponse(errPhoneNumberExists))
 				return
 			}
 		}
