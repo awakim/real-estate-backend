@@ -87,7 +87,7 @@ func (server *Server) createUserInfo(ctx *gin.Context) {
 		Country:     req.Country,
 	}
 
-	userInfo, err := server.Store.CreateUserInfo(ctx, arg)
+  userInfo, err := server.Store.CreateUserInfo(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {

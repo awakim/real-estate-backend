@@ -11,17 +11,7 @@ INSERT INTO user_information (
   country
 ) VALUES (
   $1, $2, $3, $4, $5, $6, $7, $8, $9
-) ON CONFLICT (user_id) DO UPDATE
-  SET 
-  firstname = excluded.firstname,
-  lastname = excluded.lastname,
-  phone_number = excluded.phone_number,
-  nationality = excluded.nationality,
-  address = excluded.address,
-  postal_code = excluded.postal_code,
-  city = excluded.city,
-  country = excluded.country 
-RETURNING *;
+) RETURNING *;
 
 
 -- name: GetUserInfo :one
