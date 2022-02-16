@@ -27,3 +27,9 @@ RETURNING *;
 -- name: GetUserInfo :one
 SELECT * FROM user_information
 WHERE user_id = $1 LIMIT 1;
+
+-- name: ExistsUserInfo :one
+SELECT EXISTS(
+  SELECT 1 FROM user_information
+  WHERE user_id = $1 LIMIT 1
+);

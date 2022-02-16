@@ -1,8 +1,8 @@
 package api
 
 import (
+	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 
 	db "github.com/awakim/immoblock-backend/db/sqlc"
@@ -65,6 +65,16 @@ func (server *Server) createUserInfo(ctx *gin.Context) {
 
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
+	exists, err := server.Store.ExistsUserInfo(ctx, authPayload.UserID)
+	if err == nil && exists {
+		errRowAlreadyExist := errors.New("user information already provided please contact support")
+		ctx.JSON(http.StatusForbidden, errorResponse(errRowAlreadyExist))
+		return
+	} else if err != nil && err != sql.ErrNoRows {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	arg := db.CreateUserInfoParams{
 		UserID:      authPayload.UserID,
 		Firstname:   req.Firstname,
@@ -82,7 +92,6 @@ func (server *Server) createUserInfo(ctx *gin.Context) {
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {
 			case "unique_violation":
-				fmt.Println(req)
 				errPhoneAlreadyExists := errors.New("this phone number already exists")
 				ctx.JSON(http.StatusForbidden, errorResponse(errPhoneAlreadyExists))
 				return

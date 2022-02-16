@@ -17,6 +17,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateUserInfo(ctx context.Context, arg CreateUserInfoParams) (UserInformation, error)
 	DeleteAccount(ctx context.Context, id int64) error
+	ExistsUserInfo(ctx context.Context, userID uuid.UUID) (bool, error)
 	GetAccount(ctx context.Context, id int64) (Account, error)
 	GetAccountForUpdate(ctx context.Context, id int64) (Account, error)
 	GetEntry(ctx context.Context, id int64) (Entry, error)
