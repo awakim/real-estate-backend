@@ -64,6 +64,20 @@ func (q *Queries) CreateUserInfo(ctx context.Context, arg CreateUserInfoParams) 
 	return i, err
 }
 
+const existsUserInfo = `-- name: ExistsUserInfo :one
+SELECT EXISTS(
+  SELECT 1 FROM user_information
+  WHERE user_id = $1 LIMIT 1
+)
+`
+
+func (q *Queries) ExistsUserInfo(ctx context.Context, userID uuid.UUID) (bool, error) {
+	row := q.db.QueryRowContext(ctx, existsUserInfo, userID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const getUserInfo = `-- name: GetUserInfo :one
 SELECT user_id, firstname, lastname, phone_number, nationality, address, postal_code, city, country FROM user_information
 WHERE user_id = $1 LIMIT 1

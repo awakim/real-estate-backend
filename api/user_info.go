@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 
@@ -64,6 +65,16 @@ func (server *Server) createUserInfo(ctx *gin.Context) {
 
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
+	exists, err := server.Store.ExistsUserInfo(ctx, authPayload.UserID)
+	if err == nil && exists {
+		errRowAlreadyExist := errors.New("user information already provided please contact support")
+		ctx.JSON(http.StatusForbidden, errorResponse(errRowAlreadyExist))
+		return
+	} else if err != nil && err != sql.ErrNoRows {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	arg := db.CreateUserInfoParams{
 		UserID:      authPayload.UserID,
 		Firstname:   req.Firstname,
@@ -76,17 +87,13 @@ func (server *Server) createUserInfo(ctx *gin.Context) {
 		Country:     req.Country,
 	}
 
-	userInfo, err := server.Store.CreateUserInfo(ctx, arg)
+  userInfo, err := server.Store.CreateUserInfo(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Constraint {
-			case "user_information_pkey":
-				errUserIDAlreadyExists := errors.New("user information already exists: cannot be modified")
-				ctx.JSON(http.StatusForbidden, errorResponse(errUserIDAlreadyExists))
-				return
-			case "user_information_phone_number_key":
-				errPhoneNumberExists := errors.New("user information phone number exists: cannot be modified")
-				ctx.JSON(http.StatusForbidden, errorResponse(errPhoneNumberExists))
+			switch pqErr.Code.Name() {
+			case "unique_violation":
+				errPhoneAlreadyExists := errors.New("this phone number already exists")
+				ctx.JSON(http.StatusForbidden, errorResponse(errPhoneAlreadyExists))
 				return
 			}
 		}
