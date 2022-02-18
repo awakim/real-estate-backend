@@ -1,0 +1,1 @@
+ALTER TABLE user_information DROP COLUMN verification_step;
