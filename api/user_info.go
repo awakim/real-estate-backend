@@ -26,28 +26,30 @@ type createUserInfoRequest struct {
 }
 
 type userInfoResponse struct {
-	UserID      uuid.UUID `json:"user_id"`
-	Firstname   string    `json:"firstname"`
-	Lastname    string    `json:"lastname"`
-	PhoneNumber string    `json:"phone_number"`
-	Nationality string    `json:"nationality"`
-	Address     string    `json:"address"`
-	PostalCode  string    `json:"postal_code"`
-	City        string    `json:"city"`
-	Country     string    `json:"country"`
+	UserID           uuid.UUID `json:"user_id"`
+	Firstname        string    `json:"firstname"`
+	Lastname         string    `json:"lastname"`
+	PhoneNumber      string    `json:"phone_number"`
+	Nationality      string    `json:"nationality"`
+	Address          string    `json:"address"`
+	PostalCode       string    `json:"postal_code"`
+	City             string    `json:"city"`
+	Country          string    `json:"country"`
+	VerificationStep int16     `json:"verification_step"`
 }
 
 func newUserInfoResponse(userInfo db.UserInformation) userInfoResponse {
 	return userInfoResponse{
-		UserID:      userInfo.UserID,
-		Firstname:   userInfo.Firstname,
-		Lastname:    userInfo.Lastname,
-		PhoneNumber: userInfo.PhoneNumber,
-		Nationality: userInfo.Nationality,
-		Address:     userInfo.Address,
-		PostalCode:  userInfo.PostalCode,
-		City:        userInfo.City,
-		Country:     userInfo.Country,
+		UserID:           userInfo.UserID,
+		Firstname:        userInfo.Firstname,
+		Lastname:         userInfo.Lastname,
+		PhoneNumber:      userInfo.PhoneNumber,
+		Nationality:      userInfo.Nationality,
+		Address:          userInfo.Address,
+		PostalCode:       userInfo.PostalCode,
+		City:             userInfo.City,
+		Country:          userInfo.Country,
+		VerificationStep: userInfo.VerificationStep,
 	}
 }
 
@@ -76,15 +78,16 @@ func (server *Server) createUserInfo(ctx *gin.Context) {
 	}
 
 	arg := db.CreateUserInfoParams{
-		UserID:      authPayload.UserID,
-		Firstname:   req.Firstname,
-		Lastname:    req.Lastname,
-		PhoneNumber: req.PhoneNumber,
-		Nationality: req.Nationality,
-		Address:     req.Address,
-		PostalCode:  req.PostalCode,
-		City:        req.City,
-		Country:     req.Country,
+		UserID:           authPayload.UserID,
+		Firstname:        req.Firstname,
+		Lastname:         req.Lastname,
+		PhoneNumber:      req.PhoneNumber,
+		Nationality:      req.Nationality,
+		Address:          req.Address,
+		PostalCode:       req.PostalCode,
+		City:             req.City,
+		Country:          req.Country,
+		VerificationStep: 1,
 	}
 
 	userInfo, err := server.Store.CreateUserInfo(ctx, arg)
@@ -96,6 +99,24 @@ func (server *Server) createUserInfo(ctx *gin.Context) {
 				ctx.JSON(http.StatusForbidden, errorResponse(errPhoneAlreadyExists))
 				return
 			}
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := newUserInfoResponse(userInfo)
+	ctx.JSON(http.StatusOK, rsp)
+}
+
+func (server *Server) getUserInfo(ctx *gin.Context) {
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	userInfo, err := server.Store.GetUserInfo(ctx, authPayload.UserID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("user has not provided information yet")))
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

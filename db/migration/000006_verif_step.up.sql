@@ -1,0 +1,1 @@
+ALTER TABLE user_information ADD COLUMN verification_step smallint NOT NULL DEFAULT 0;

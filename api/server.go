@@ -68,6 +68,7 @@ func (server *Server) setupRouter() {
 
 	authRoutes.POST("/transfers", server.createTransfer)
 
+	authRoutes.GET("/users/info", server.getUserInfo)
 	authRoutes.POST("/users/info", server.createUserInfo)
 	authRoutes.POST("/users/logout", server.logoutUser)
 

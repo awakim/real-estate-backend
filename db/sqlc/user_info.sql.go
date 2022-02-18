@@ -19,22 +19,24 @@ INSERT INTO user_information (
   address,
   postal_code,
   city,
-  country
+  country,
+  verification_step
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9
-) RETURNING user_id, firstname, lastname, phone_number, nationality, address, postal_code, city, country
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+) RETURNING user_id, firstname, lastname, phone_number, nationality, address, postal_code, city, country, verification_step
 `
 
 type CreateUserInfoParams struct {
-	UserID      uuid.UUID `json:"user_id"`
-	Firstname   string    `json:"firstname"`
-	Lastname    string    `json:"lastname"`
-	PhoneNumber string    `json:"phone_number"`
-	Nationality string    `json:"nationality"`
-	Address     string    `json:"address"`
-	PostalCode  string    `json:"postal_code"`
-	City        string    `json:"city"`
-	Country     string    `json:"country"`
+	UserID           uuid.UUID `json:"user_id"`
+	Firstname        string    `json:"firstname"`
+	Lastname         string    `json:"lastname"`
+	PhoneNumber      string    `json:"phone_number"`
+	Nationality      string    `json:"nationality"`
+	Address          string    `json:"address"`
+	PostalCode       string    `json:"postal_code"`
+	City             string    `json:"city"`
+	Country          string    `json:"country"`
+	VerificationStep int16     `json:"verification_step"`
 }
 
 func (q *Queries) CreateUserInfo(ctx context.Context, arg CreateUserInfoParams) (UserInformation, error) {
@@ -48,6 +50,7 @@ func (q *Queries) CreateUserInfo(ctx context.Context, arg CreateUserInfoParams) 
 		arg.PostalCode,
 		arg.City,
 		arg.Country,
+		arg.VerificationStep,
 	)
 	var i UserInformation
 	err := row.Scan(
@@ -60,6 +63,7 @@ func (q *Queries) CreateUserInfo(ctx context.Context, arg CreateUserInfoParams) 
 		&i.PostalCode,
 		&i.City,
 		&i.Country,
+		&i.VerificationStep,
 	)
 	return i, err
 }
@@ -79,7 +83,7 @@ func (q *Queries) ExistsUserInfo(ctx context.Context, userID uuid.UUID) (bool, e
 }
 
 const getUserInfo = `-- name: GetUserInfo :one
-SELECT user_id, firstname, lastname, phone_number, nationality, address, postal_code, city, country FROM user_information
+SELECT user_id, firstname, lastname, phone_number, nationality, address, postal_code, city, country, verification_step FROM user_information
 WHERE user_id = $1 LIMIT 1
 `
 
@@ -96,6 +100,7 @@ func (q *Queries) GetUserInfo(ctx context.Context, userID uuid.UUID) (UserInform
 		&i.PostalCode,
 		&i.City,
 		&i.Country,
+		&i.VerificationStep,
 	)
 	return i, err
 }

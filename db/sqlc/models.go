@@ -62,10 +62,11 @@ type UserInformation struct {
 	Firstname string    `json:"firstname"`
 	Lastname  string    `json:"lastname"`
 	// has to be E164 compliant
-	PhoneNumber string `json:"phone_number"`
-	Nationality string `json:"nationality"`
-	Address     string `json:"address"`
-	PostalCode  string `json:"postal_code"`
-	City        string `json:"city"`
-	Country     string `json:"country"`
+	PhoneNumber      string `json:"phone_number"`
+	Nationality      string `json:"nationality"`
+	Address          string `json:"address"`
+	PostalCode       string `json:"postal_code"`
+	City             string `json:"city"`
+	Country          string `json:"country"`
+	VerificationStep int16  `json:"verification_step"`
 }
