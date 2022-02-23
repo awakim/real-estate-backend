@@ -8,6 +8,7 @@ import (
 	cache "github.com/awakim/immoblock-backend/cache/redis"
 	"github.com/awakim/immoblock-backend/config"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
+	identity "github.com/awakim/immoblock-backend/identity/auth0"
 	"github.com/awakim/immoblock-backend/token"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -16,25 +17,27 @@ import (
 
 // Server serves HTTP requests for our banking service.
 type Server struct {
-	Config     config.Config
-	Store      db.Store
-	Cache      cache.Cache
-	TokenMaker token.Maker
-	Router     *gin.Engine
+	Config      config.Config
+	Store       db.Store
+	Cache       cache.Cache
+	TokenMaker  token.Maker
+	Router      *gin.Engine
+	UserManager identity.UserManager
 }
 
 // NewServer creates a new HTTP server and set up routing.
-func NewServer(config config.Config, store db.Store, cache cache.Cache) (*Server, error) {
+func NewServer(config config.Config, store db.Store, cache cache.Cache, userManager identity.UserManager) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
 
 	server := &Server{
-		Config:     config,
-		Store:      store,
-		Cache:      cache,
-		TokenMaker: tokenMaker,
+		Config:      config,
+		Store:       store,
+		Cache:       cache,
+		TokenMaker:  tokenMaker,
+		UserManager: userManager,
 	}
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
