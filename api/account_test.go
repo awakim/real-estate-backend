@@ -14,6 +14,7 @@ import (
 	mockcache "github.com/awakim/immoblock-backend/cache/mock"
 	mockdb "github.com/awakim/immoblock-backend/db/mock"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
+	mockidentity "github.com/awakim/immoblock-backend/identity/mock"
 	"github.com/awakim/immoblock-backend/token"
 	"github.com/awakim/immoblock-backend/util"
 	"github.com/gin-gonic/gin"
@@ -32,7 +33,7 @@ func TestGetAccountAPI(t *testing.T) {
 		name          string
 		accountID     int64
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
-		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache)
+		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement)
 		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
 	}{
 		{
@@ -41,7 +42,7 @@ func TestGetAccountAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
 					Times(1).
@@ -62,7 +63,7 @@ func TestGetAccountAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, unauthorizedUserID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
 					Times(1).
@@ -80,7 +81,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "NoAuthorization",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -98,7 +99,7 @@ func TestGetAccountAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
 					Times(1).
@@ -118,7 +119,7 @@ func TestGetAccountAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
 					Times(1).
@@ -138,7 +139,7 @@ func TestGetAccountAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -160,9 +161,10 @@ func TestGetAccountAPI(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			cache := mockcache.NewMockCache(ctrl)
-			tc.buildStubs(store, cache)
+			userManager := mockidentity.NewMockUserManagement(ctrl)
+			tc.buildStubs(store, cache, userManager)
 
-			server := newTestServer(t, store, cache)
+			server := newTestServer(t, store, cache, userManager)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/accounts/%d", tc.accountID)
@@ -184,7 +186,7 @@ func TestCreateAccountAPI(t *testing.T) {
 		name          string
 		body          gin.H
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
-		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache)
+		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement)
 		checkResponse func(recoder *httptest.ResponseRecorder)
 	}{
 		{
@@ -195,7 +197,7 @@ func TestCreateAccountAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				arg := db.CreateAccountParams{
 					UserID:     account.UserID,
 					PropertyID: account.PropertyID,
@@ -225,7 +227,7 @@ func TestCreateAccountAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Times(1).Return(db.Account{}, sql.ErrConnDone)
 				cache.EXPECT().IsRevoked(gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
 			},
@@ -241,7 +243,7 @@ func TestCreateAccountAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				cache.EXPECT().IsRevoked(gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
 				store.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Times(0)
 			},
@@ -260,9 +262,10 @@ func TestCreateAccountAPI(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			cache := mockcache.NewMockCache(ctrl)
-			tc.buildStubs(store, cache)
+			userManager := mockidentity.NewMockUserManagement(ctrl)
+			tc.buildStubs(store, cache, userManager)
 
-			server := newTestServer(t, store, cache)
+			server := newTestServer(t, store, cache, userManager)
 			recorder := httptest.NewRecorder()
 
 			// Marshal body data to JSON
@@ -298,7 +301,7 @@ func TestListAccountsAPI(t *testing.T) {
 		name          string
 		query         Query
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
-		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache)
+		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement)
 		checkResponse func(recoder *httptest.ResponseRecorder)
 	}{
 		{
@@ -310,7 +313,7 @@ func TestListAccountsAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				arg := db.ListAccountsParams{
 					UserID: accounts[n-1].UserID,
 					Limit:  int32(n),
@@ -340,7 +343,7 @@ func TestListAccountsAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					ListAccounts(gomock.Any(), gomock.Any()).
 					Times(1).
@@ -363,7 +366,7 @@ func TestListAccountsAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					ListAccounts(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -385,7 +388,7 @@ func TestListAccountsAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, user.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					ListAccounts(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -409,9 +412,10 @@ func TestListAccountsAPI(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			cache := mockcache.NewMockCache(ctrl)
-			tc.buildStubs(store, cache)
+			userManager := mockidentity.NewMockUserManagement(ctrl)
+			tc.buildStubs(store, cache, userManager)
 
-			server := newTestServer(t, store, cache)
+			server := newTestServer(t, store, cache, userManager)
 			recorder := httptest.NewRecorder()
 
 			url := "/accounts"
