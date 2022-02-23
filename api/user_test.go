@@ -14,6 +14,7 @@ import (
 	mockcache "github.com/awakim/immoblock-backend/cache/mock"
 	mockdb "github.com/awakim/immoblock-backend/db/mock"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
+	mockidentity "github.com/awakim/immoblock-backend/identity/mock"
 	"github.com/awakim/immoblock-backend/util"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
@@ -50,8 +51,8 @@ func EqCreateUserParams(arg db.CreateUserParams, password string) gomock.Matcher
 	return eqCreateUserParamsMatcher{arg, password}
 }
 
-func randomUser(t *testing.T) (user db.User, password string) {
-	password = util.RandomString(8)
+func randomUser(t *testing.T) (user db.User, hashedPassword string) {
+	password := util.RandomString(8)
 	hashedPassword, err := util.HashPassword(password)
 	require.NoError(t, err)
 	uid, err := uuid.NewRandom()
@@ -85,7 +86,7 @@ func TestCreateUserAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		body          gin.H
-		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache)
+		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement)
 		checkResponse func(recoder *httptest.ResponseRecorder)
 	}{
 		{
@@ -95,15 +96,13 @@ func TestCreateUserAPI(t *testing.T) {
 				"nickname": user.Nickname,
 				"email":    user.Email,
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				arg := db.CreateUserParams{
 					Nickname: user.Nickname,
 					Email:    user.Email,
 				}
-				store.EXPECT().
-					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
-					Times(1).
-					Return(user, nil)
+				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).Return(user, nil)
+				userManager.EXPECT().Create(gomock.Any(), gomock.Any()).Times(1).Return(nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -117,11 +116,9 @@ func TestCreateUserAPI(t *testing.T) {
 				"nickname": user.Nickname,
 				"email":    user.Email,
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
-				store.EXPECT().
-					CreateUser(gomock.Any(), gomock.Any()).
-					Times(1).
-					Return(db.User{}, sql.ErrConnDone)
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
+				store.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(1).Return(db.User{}, sql.ErrConnDone)
+				userManager.EXPECT().Create(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -134,11 +131,9 @@ func TestCreateUserAPI(t *testing.T) {
 				"nickname": user.Nickname,
 				"email":    user.Email,
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
-				store.EXPECT().
-					CreateUser(gomock.Any(), gomock.Any()).
-					Times(1).
-					Return(db.User{}, &pq.Error{Code: "23505"})
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
+				store.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(1).Return(db.User{}, &pq.Error{Code: "23505"})
+				userManager.EXPECT().Create(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusForbidden, recorder.Code)
@@ -151,10 +146,11 @@ func TestCreateUserAPI(t *testing.T) {
 				"nickname": user.Nickname,
 				"email":    "invalid-email",
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(0)
+				userManager.EXPECT().Create(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -167,10 +163,11 @@ func TestCreateUserAPI(t *testing.T) {
 				"nickname": user.Nickname,
 				"email":    user.Email,
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				store.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(0)
+				userManager.EXPECT().Create(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -187,9 +184,10 @@ func TestCreateUserAPI(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			cache := mockcache.NewMockCache(ctrl)
-			tc.buildStubs(store, cache)
+			userManager := mockidentity.NewMockUserManagement(ctrl)
+			tc.buildStubs(store, cache, userManager)
 
-			server := newTestServer(t, store, cache)
+			server := newTestServer(t, store, cache, userManager)
 			recorder := httptest.NewRecorder()
 
 			// Marshal body data to JSON

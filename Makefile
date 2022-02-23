@@ -44,7 +44,10 @@ mockdb:
 mockcache:
 	mockgen -package mockcache -destination cache/mock/store.go github.com/awakim/immoblock-backend/cache/redis Cache
 
+mockidentity:
+	mockgen -package mockidentity -destination identity/mock/management.go github.com/awakim/immoblock-backend/identity/auth0 UserManagement
+
 migratecreate:
 	migrate create -ext sql -dir db/migration -seq $(migration)
 
-.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc server mock migratecreate test
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc server mock migratecreate test mockidentity

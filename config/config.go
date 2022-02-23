@@ -20,6 +20,9 @@ type Config struct {
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 	StrCorsOrigins       string        `mapstructure:"CORS_ORIGIN"`
 	CorsOrigins          []string
+	Auth0Domain          string `mapstructure:"AUTH0_DOMAIN"`
+	Auth0ClientID        string `mapstructure:"AUTH0_CLIENT_ID"`
+	Auth0ClientSecret    string `mapstructure:"AUTH0_CLIENT_SECRET"`
 }
 
 // LoadConfig reads configuration from file or environment variables.

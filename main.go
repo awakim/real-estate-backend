@@ -10,10 +10,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/auth0/go-auth0/management"
 	"github.com/awakim/immoblock-backend/api"
 	cache "github.com/awakim/immoblock-backend/cache/redis"
 	"github.com/awakim/immoblock-backend/config"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
+	identity "github.com/awakim/immoblock-backend/identity/auth0"
 	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
 )
@@ -42,10 +44,16 @@ func main() {
 		log.Fatal("cannot connect to redis:", err)
 	}
 
+	m, err := management.New(config.Auth0Domain, management.WithClientCredentials(config.Auth0ClientID, config.Auth0ClientSecret))
+	if err != nil {
+		log.Fatal("cannot create user manager: %w", err)
+	}
+
 	store := db.NewStore(conn)
 	cache := cache.NewCache(rdb)
+	userManager := identity.NewUserManager(m)
 
-	server, err := api.NewServer(config, store, cache)
+	server, err := api.NewServer(config, store, cache, userManager)
 	if err != nil {
 		log.Fatal("cannot create server:", err)
 	}

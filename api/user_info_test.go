@@ -12,6 +12,7 @@ import (
 	mockcache "github.com/awakim/immoblock-backend/cache/mock"
 	mockdb "github.com/awakim/immoblock-backend/db/mock"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
+	mockidentity "github.com/awakim/immoblock-backend/identity/mock"
 	"github.com/awakim/immoblock-backend/token"
 	"github.com/awakim/immoblock-backend/util"
 	"github.com/golang/mock/gomock"
@@ -44,7 +45,7 @@ func TestGetUserInfoAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
-		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache)
+		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement)
 		checkResponse func(recoder *httptest.ResponseRecorder)
 	}{
 		{
@@ -53,7 +54,7 @@ func TestGetUserInfoAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user1.ID, user1.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				cache.EXPECT().IsRevoked(gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
 				store.EXPECT().GetUserInfo(gomock.Any(), gomock.Eq(user1.ID)).Times(1).Return(userInfo1, nil)
 			},
@@ -67,7 +68,7 @@ func TestGetUserInfoAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user2.ID, user2.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				cache.EXPECT().IsRevoked(gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
 				store.EXPECT().GetUserInfo(gomock.Any(), gomock.Eq(user2.ID)).Times(1).Return(userInfo2, sql.ErrNoRows)
 			},
@@ -81,7 +82,7 @@ func TestGetUserInfoAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user2.ID, user2.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				cache.EXPECT().IsRevoked(gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
 				store.EXPECT().GetUserInfo(gomock.Any(), gomock.Eq(user2.ID)).Times(1).Return(userInfo2, errors.New("internal server error"))
 			},
@@ -95,7 +96,7 @@ func TestGetUserInfoAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				// addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user2.ID, user2.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				cache.EXPECT().IsRevoked(gomock.Any(), gomock.Any()).Times(0).Return(false, nil)
 				// store.EXPECT().GetUserInfo(gomock.Any(), gomock.Eq(user2.ID)).Times(1).Return(userInfo2, errors.New("internal server error"))
 			},
@@ -109,7 +110,7 @@ func TestGetUserInfoAPI(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user2.ID, user2.IsAdmin, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 				cache.EXPECT().IsRevoked(gomock.Any(), gomock.Any()).Times(1).Return(true, nil)
 				// store.EXPECT().GetUserInfo(gomock.Any(), gomock.Eq(user2.ID)).Times(1).Return(userInfo2, errors.New("internal server error"))
 			},
@@ -128,9 +129,10 @@ func TestGetUserInfoAPI(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			cache := mockcache.NewMockCache(ctrl)
-			tc.buildStubs(store, cache)
+			userManager := mockidentity.NewMockUserManagement(ctrl)
+			tc.buildStubs(store, cache, userManager)
 
-			server := newTestServer(t, store, cache)
+			server := newTestServer(t, store, cache, userManager)
 			recorder := httptest.NewRecorder()
 
 			url := "/users/info"
@@ -176,7 +178,7 @@ func TestGetUserInfoAPI(t *testing.T) {
 // 		name          string
 // 		body          gin.H
 // 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
-// 		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache)
+// 		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement)
 // 		checkResponse func(recoder *httptest.ResponseRecorder)
 // 	}{
 // 		{
@@ -186,7 +188,7 @@ func TestGetUserInfoAPI(t *testing.T) {
 // 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 // 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user1.ID, user1.IsAdmin, time.Minute)
 // 			},
-// 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache) {
+// 			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockCache, userManager *mockidentity.MockUserManagement) {
 // 				cache.EXPECT().IsRevoked(gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
 // 				store.EXPECT().ExistsUserInfo(gomock.Any(), gomock.Eq(user1.ID)).Times(1).Return(false, nil)
 // 				store.EXPECT().CreateUserInfo(gomock.Any(), gomock.Eq(arg1)).Times(1).Return(userInfo1, nil)
@@ -206,7 +208,7 @@ func TestGetUserInfoAPI(t *testing.T) {
 
 // 			store := mockdb.NewMockStore(ctrl)
 // 			cache := mockcache.NewMockCache(ctrl)
-// 			tc.buildStubs(store, cache)
+// 			tc.buildStubs(store, cache, userManager)
 
 // 			server := newTestServer(t, store, cache)
 // 			recorder := httptest.NewRecorder()

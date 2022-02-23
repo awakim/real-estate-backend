@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/auth0/go-auth0/management"
 	db "github.com/awakim/immoblock-backend/db/sqlc"
 	"github.com/awakim/immoblock-backend/util"
 	"github.com/go-playground/validator/v10"
@@ -73,6 +74,24 @@ func (server *Server) createUser(ctx *gin.Context) {
 				return
 			}
 		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	uid := user.ID
+	strUUID := uid.String()
+	verifyEmail := true
+	connection := "Username-Password-Authentication"
+	authZeroUser := &management.User{
+		ID:          &strUUID,
+		Name:        &req.Nickname,
+		Email:       &req.Email,
+		Password:    &hashedPassword,
+		VerifyEmail: &verifyEmail,
+		Connection:  &connection,
+	}
+	err = server.UserManager.Create(authZeroUser)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
